@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peikot Padel Tour — Tilastot</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #071a0d;
+  --bg2: #0c2413;
+  --card: #122e1b;
+  --card2: #173a24;
+  --border: #245a34;
+  --border2: #2f7a46;
+  --ink: #f2f7f3;
+  --ink2: #b0cfb8;
+  --ink3: #6a9e78;
+  --accent: #e8c240;
+  --accent-glow: rgba(232,194,64,0.10);
+  --green: #4dd468;
+  --green-bright: #72e88a;
+  --red: #e85040;
+  --red-dim: rgba(232,80,64,0.14);
+  --blue: #5aa0e4;
+  --gold: #e8c240;
+  --silver: #c4ccc6;
+  --bronze: #c48050;
+  --white: #ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.4}
+
+/* HERO */
+.hero{position:relative;padding:40px 40px 32px;overflow:hidden;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.hero::before{content:'';position:absolute;top:-100px;left:-60px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(40,120,60,0.2) 0%,transparent 70%);pointer-events:none}
+.hero-logo{width:76px;height:76px;border-radius:14px;overflow:hidden;flex-shrink:0;border:2px solid var(--border2);background:var(--card)}
+.hero-logo img{width:100%;height:100%;object-fit:cover}
+.hero-text{flex:1;min-width:200px}
+.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.hero-title{font-size:clamp(28px,6vw,52px);font-weight:800;letter-spacing:-2px;line-height:.95}
+.hero-title span{color:var(--green-bright)}
+.hero-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2);margin-top:12px;display:flex;gap:20px;flex-wrap:wrap}
+.hero-sub b{color:var(--white);font-weight:600}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(7,26,13,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 40px;display:flex;gap:0;overflow-x:auto}
+.nav a{padding:14px 18px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);text-decoration:none;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.nav a:hover{color:var(--ink2)}
+.nav a.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+section{padding:44px 40px;max-width:1200px;margin:0 auto}
+.sec-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.sec-title{font-size:clamp(22px,4vw,34px);font-weight:800;letter-spacing:-1px;margin-bottom:28px;color:var(--white)}
+
+/* PLAYER CHIPS */
+.player-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.p-chip{padding:8px 16px;border:2px solid var(--border);background:var(--card);border-radius:6px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;color:var(--ink)}
+.p-chip:hover{border-color:var(--border2);background:var(--card2)}
+.p-chip.active{background:var(--green);border-color:var(--green);color:var(--bg)}
+.p-chip.sel1{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.p-chip.sel2{background:var(--blue);border-color:var(--blue);color:var(--white)}
+
+/* PODIUM */
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:12px;margin-bottom:40px;flex-wrap:wrap}
+.podium-col{text-align:center}
+.podium-bar{width:140px;background:var(--card);border:1px solid var(--border);border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:20px 12px 16px;position:relative;overflow:hidden}
+.podium-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.podium-col:nth-child(1) .podium-bar::before{background:var(--silver)}
+.podium-col:nth-child(2) .podium-bar::before{background:var(--gold)}
+.podium-col:nth-child(3) .podium-bar::before{background:var(--bronze)}
+.podium-rank{font-family:'JetBrains Mono',monospace;font-size:40px;font-weight:700;line-height:1;margin-bottom:4px}
+.podium-col:nth-child(1) .podium-rank{color:var(--silver)}
+.podium-col:nth-child(2) .podium-rank{color:var(--gold)}
+.podium-col:nth-child(3) .podium-rank{color:var(--bronze)}
+.podium-name{font-size:17px;font-weight:800;margin-bottom:2px;color:var(--white)}
+.podium-stat{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2)}
+.podium-trophies{font-size:16px;margin-top:4px}
+
+/* TABLE */
+.lb-table{width:100%;border-collapse:collapse;margin-bottom:40px}
+.lb-table th{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--ink2);text-align:left;padding:10px;border-bottom:1px solid var(--border)}
+.lb-table th.r{text-align:right}
+.lb-table th.c{text-align:center}
+.lb-table td{padding:11px 10px;border-bottom:1px solid rgba(36,90,52,0.4);font-size:14px;vertical-align:middle;color:var(--ink)}
+.lb-table td.r{text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px}
+.lb-table tr{cursor:pointer;transition:background .1s}
+.lb-table tr:hover{background:rgba(60,180,86,0.08)}
+.lb-rank{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--ink2);width:28px}
+.lb-name{font-weight:700;font-size:15px;color:var(--white)}
+.lb-bar-cell{width:140px}
+.lb-bar-wrap{height:7px;background:var(--bg);border-radius:4px;overflow:hidden;display:flex}
+.lb-bar-w{height:100%;background:var(--green);border-radius:4px 0 0 4px}
+.lb-bar-t{height:100%;background:var(--ink3)}
+.lb-bar-l{height:100%;background:var(--red);border-radius:0 4px 4px 0}
+.trophy-cell{font-size:14px;text-align:center}
+
+/* AWARDS */
+.awards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-bottom:40px}
+.award-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:22px;position:relative;overflow:hidden}
+.award-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent)}
+.award-icon{font-size:28px;margin-bottom:6px}
+.award-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink2);margin-bottom:4px}
+.award-value{font-size:22px;font-weight:800;margin-bottom:2px;color:var(--white)}
+.award-desc{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2)}
+
+/* H2H */
+.h2h-box{background:var(--card);border:2px solid var(--border2);border-radius:10px;padding:28px;margin-bottom:28px;display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center}
+.h2h-side{text-align:center}
+.h2h-name{font-size:26px;font-weight:800;margin-bottom:2px}
+.h2h-wins{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:700;line-height:1;color:var(--green-bright)}
+.h2h-sub{font-size:11px;color:var(--ink2);margin-top:2px}
+.h2h-center{text-align:center;color:var(--ink)}
+
+/* TOUR CARDS */
+.tour-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:28px}
+.tour-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.tour-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.tour-card .tour-num{font-family:'JetBrains Mono',monospace;font-size:48px;font-weight:700;color:var(--ink3);line-height:1;position:absolute;right:16px;top:10px;opacity:.2}
+.tour-card .tour-name{font-size:18px;font-weight:800;margin-bottom:2px;color:var(--white)}
+.tour-card .tour-date{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2);margin-bottom:10px}
+.tour-card .tour-winner{font-size:14px;color:var(--ink)}
+.tour-card .tour-winner b{color:var(--gold)}
+
+/* PLAYER DETAIL OVERLAY (from v1) */
+.detail-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);overflow-y:auto;padding:40px 20px}
+.detail-overlay.open{display:block}
+.detail-panel{max-width:900px;margin:0 auto;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:36px 40px;position:relative}
+.detail-close{position:absolute;top:16px;right:20px;background:none;border:none;color:var(--ink2);font-size:28px;cursor:pointer;font-family:'Syne',sans-serif}
+.detail-close:hover{color:var(--white)}
+.detail-name{font-size:36px;font-weight:800;color:var(--white)}
+.detail-sub{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink2);margin-bottom:24px}
+
+.d-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:24px}
+.d-stat{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px}
+.d-stat-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ink2);margin-bottom:2px}
+.d-stat-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700}
+
+.sub-title{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--ink3);margin-bottom:10px;margin-top:8px;display:flex;align-items:center;gap:12px}
+.sub-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.placement-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.placement{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 14px;text-align:center;min-width:80px}
+.placement-tour{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2)}
+.placement-rank{font-size:24px;font-weight:800}
+.placement-pts{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2)}
+
+.partner-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(36,90,52,0.3);font-size:14px}
+.partner-name{font-weight:700;width:80px;color:var(--white)}
+.partner-record{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2);width:70px}
+.partner-bar{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.partner-bar-fill{height:100%;border-radius:3px}
+.partner-pct{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;width:40px;text-align:right}
+
+/* MATCH ROW */
+.match-list{display:flex;flex-direction:column;gap:5px;margin-bottom:28px}
+.match-row{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 14px;display:grid;grid-template-columns:70px 1fr auto 1fr 60px;align-items:center;gap:8px;font-size:14px}
+.match-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2)}
+.match-team{font-weight:600;color:var(--ink)}
+.match-team.right{text-align:right}
+.match-score{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;text-align:center;letter-spacing:1px}
+.match-score .w{color:var(--green-bright)}
+.match-score .l{color:var(--red)}
+.match-score .t{color:var(--ink3)}
+.match-badge{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 6px;border-radius:3px}
+.match-badge.W{background:rgba(77,212,104,0.18);color:var(--green-bright)}
+.match-badge.L{background:var(--red-dim);color:var(--red)}
+.match-badge.T{background:rgba(106,158,120,0.18);color:var(--ink2)}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--ink2);font-size:14px}
+.empty-state .big{font-size:40px;margin-bottom:8px}
+
+footer{text-align:center;padding:40px;border-top:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2)}
+footer a{color:var(--accent);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+@media(max-width:700px){
+  .hero,.nav,section,footer{padding-left:16px;padding-right:16px}
+  .podium-bar{width:100px;padding:14px 8px 12px}
+  .podium-rank{font-size:28px}
+  .podium-name{font-size:14px}
+  .match-row{grid-template-columns:1fr;gap:4px}
+  .match-team.right{text-align:left}
+  .h2h-box{grid-template-columns:1fr;text-align:center}
+  .lb-bar-cell{display:none}
+  .detail-panel{padding:24px 20px}
+  .detail-name{font-size:28px}
+}
+/* KEHITYS */
+.kehitys-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin-bottom:28px}
+.kehitys-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;cursor:pointer;transition:all .15s}
+.kehitys-card:hover{border-color:var(--border2)}
+.kehitys-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.kehitys-name{font-size:18px;font-weight:800;color:var(--white)}
+.kehitys-badge{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;padding:3px 10px;border-radius:4px}
+.kehitys-badge.up{background:rgba(77,212,104,0.15);color:var(--green-bright)}
+.kehitys-badge.down{background:var(--red-dim);color:var(--red)}
+.kehitys-badge.flat{background:rgba(106,158,120,0.15);color:var(--ink2)}
+.kehitys-sparkline{display:flex;align-items:flex-end;gap:3px;height:48px;margin-bottom:10px}
+.kehitys-bar{flex:1;border-radius:3px 3px 0 0;min-width:0;position:relative;transition:height .3s}
+.kehitys-bar-label{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink2);white-space:nowrap}
+.kehitys-bar-tour{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink3);margin-top:2px}
+.kehitys-meta{display:flex;gap:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2)}
+.kehitys-arrow{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-family:'JetBrains Mono',monospace;font-size:12px}
+.kehitys-arrow .from{color:var(--ink3)}.kehitys-arrow .to{color:var(--white);font-weight:700}
+.kehitys-arrow .arr{color:var(--ink3)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .4s ease both}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-logo"><img src="https://media.canva.com/v2/image-resize/format:PNG/height:200/quality:100/uri:ifs%3A%2F%2FM%2F55f06137-9630-4794-bab7-1d9cae99d09b/watermark:F/width:200?csig=AAAAAAAAAAAAAAAAAAAAADPngyiqWzdAuGvA6W5NDfRFd5IjGKfRNNLVjR4f3QI1&exp=1773174975&osig=AAAAAAAAAAAAAAAAAAAAADqCgUSQFWcsFL8RUS3flFbMVIBvj9GcvensoU6sT3-w&signer=media-rpc&x-canva-quality=thumbnail" alt="Peikot" onerror="this.parentElement.innerHTML='🏓'"></div>
+  <div class="hero-text">
+    <div class="hero-eyebrow">Vuoreksen Peikot ry</div>
+    <div class="hero-title">Peikot Padel <span>Tour</span></div>
+    <div class="hero-sub" id="heroStats"></div>
+  </div>
+</div>
+
+<div class="nav" id="mainNav">
+  <a href="#ranking" class="active" data-sec="ranking">Ranking</a>
+  <a href="#palkinnot" data-sec="palkinnot">Palkinnot</a>
+  <a href="#h2h" data-sec="h2h">Head-to-Head</a>
+  <a href="#verkosto" data-sec="verkosto">Verkosto</a>
+  <a href="#kehitys" data-sec="kehitys">Kehitys</a>
+  <a href="#turnaukset" data-sec="turnaukset">Turnaukset</a>
+</div>
+
+<section id="ranking">
+  <div class="sec-label">Kaikkien aikojen</div>
+  <div class="sec-title">Ranking</div>
+  <div class="podium" id="podium"></div>
+  <table class="lb-table" id="leaderboard"></table>
+</section>
+
+<section id="palkinnot">
+  <div class="sec-label">Kauden 2026</div>
+  <div class="sec-title">Palkinnot & Ennätykset</div>
+  <div class="awards" id="awards"></div>
+</section>
+
+<section id="h2h">
+  <div class="sec-label">Vertailu</div>
+  <div class="sec-title">Head-to-Head</div>
+  <div class="player-chips" id="h2hChips"></div>
+  <div id="h2hContent"><div class="empty-state"><div class="big">⚔️</div>Valitse kaksi pelaajaa vertaillaksesi</div></div>
+</section>
+
+<section id="verkosto">
+  <div class="sec-label">Kuka pelaa kenen kanssa</div>
+  <div class="sec-title">Verkostokartta</div>
+  <canvas id="networkCanvas" style="width:100%;height:520px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:grab"></canvas>
+  <div style="display:flex;gap:24px;margin-top:14px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--ink2);flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:32px;height:3px;border-radius:2px;background:var(--green-bright)"></div> Paljon voittoja yhdessä</div>
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:32px;height:3px;border-radius:2px;background:var(--red)"></div> Paljon tappioita yhdessä</div>
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:32px;height:3px;border-radius:2px;background:var(--ink3);opacity:.5"></div> Harvemmin pelattu</div>
+  </div>
+</section>
+
+<section id="kehitys">
+  <div class="sec-label">Kuka nousee, kuka laskee</div>
+  <div class="sec-title">Kauden kehittyjät</div>
+  <div id="kehitysContent"></div>
+</section>
+
+<section id="turnaukset">
+  <div class="sec-label">Kaikki turnaukset</div>
+  <div class="sec-title">Turnaushistoria</div>
+  <div class="tour-grid" id="tourGrid"></div>
+  <div id="tourDetail"></div>
+</section>
+
+<!-- PLAYER DETAIL OVERLAY -->
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-panel" id="detailPanel"></div>
+</div>
+
+<footer>
+  <div style="margin-bottom:6px">🏓 Peikot Padel Tour — Kausi 2026</div>
+  <div>Tulokset: <a href="https://www.padelution.com/americano" target="_blank">Padelution</a> · <a href="https://vuoreksenpeikot.yhdistysavain.fi" target="_blank">Vuoreksen Peikot ry</a></div>
+</footer>
+
+<script>
+// DATA
+const TOURS=[
+  {id:1,name:"Tour 1",date:"18.01.2026",url:"https://www.padelution.com/americano/a0dd70bf-c6ff-4c57-84f3-b9a3ee61e94f"},
+  {id:2,name:"Tour 2",date:"21.01.2026",url:"https://www.padelution.com/americano/a0e3f023-6551-4cc5-ac30-56957faa471c"},
+  {id:3,name:"Tour 3",date:"15.02.2026",url:"https://www.padelution.com/americano/a115ac26-719e-4c70-8435-95afa9a3dd45"},
+  {id:4,name:"Tour 4",date:"23.02.2026",url:"https://www.padelution.com/americano/a1269451-22f8-4996-82dd-b5a7b988d609"},
+];
+const M=[
+  {t:0,r:1,a:["Janne","Vesa"],b:["Jussi","JP"],sa:23,sb:9},{t:0,r:1,a:["Niilo","Riku"],b:["Markus","Aki"],sa:19,sb:13},
+  {t:0,r:2,a:["Janne","Jussi"],b:["Niilo","Aki"],sa:14,sb:18},{t:0,r:2,a:["Riku","Markus"],b:["JP","Vesa"],sa:18,sb:14},
+  {t:0,r:3,a:["Janne","Niilo"],b:["Riku","Vesa"],sa:16,sb:16},{t:0,r:3,a:["Markus","JP"],b:["Aki","Jussi"],sa:7,sb:25},
+  {t:0,r:4,a:["Janne","Riku"],b:["Markus","Jussi"],sa:18,sb:14},{t:0,r:4,a:["JP","Aki"],b:["Vesa","Niilo"],sa:9,sb:23},
+  {t:0,r:5,a:["Janne","Markus"],b:["JP","Niilo"],sa:19,sb:13},{t:0,r:5,a:["Aki","Vesa"],b:["Jussi","Riku"],sa:20,sb:12},
+  {t:0,r:6,a:["Janne","JP"],b:["Aki","Riku"],sa:12,sb:20},{t:0,r:6,a:["Vesa","Jussi"],b:["Niilo","Markus"],sa:16,sb:16},
+  {t:0,r:7,a:["Janne","Aki"],b:["Vesa","Markus"],sa:13,sb:19},{t:0,r:7,a:["Jussi","Niilo"],b:["Riku","JP"],sa:25,sb:7},
+  {t:1,r:1,a:["Janne","Niilo"],b:["Jussi","Mitja"],sa:14,sb:18},{t:1,r:1,a:["Vesa","Aki"],b:["Messi","Jere"],sa:17,sb:15},
+  {t:1,r:2,a:["Janne","Jussi"],b:["Vesa","Jere"],sa:14,sb:18},{t:1,r:2,a:["Aki","Messi"],b:["Mitja","Niilo"],sa:17,sb:15},
+  {t:1,r:3,a:["Janne","Vesa"],b:["Aki","Niilo"],sa:12,sb:20},{t:1,r:3,a:["Messi","Mitja"],b:["Jere","Jussi"],sa:16,sb:16},
+  {t:1,r:4,a:["Janne","Aki"],b:["Messi","Jussi"],sa:13,sb:19},{t:1,r:4,a:["Mitja","Jere"],b:["Niilo","Vesa"],sa:11,sb:21},
+  {t:1,r:5,a:["Janne","Messi"],b:["Mitja","Vesa"],sa:20,sb:12},{t:1,r:5,a:["Jere","Niilo"],b:["Jussi","Aki"],sa:17,sb:15},
+  {t:1,r:6,a:["Janne","Mitja"],b:["Jere","Aki"],sa:16,sb:16},{t:1,r:6,a:["Niilo","Jussi"],b:["Vesa","Messi"],sa:13,sb:19},
+  {t:1,r:7,a:["Janne","Jere"],b:["Niilo","Messi"],sa:9,sb:23},{t:1,r:7,a:["Jussi","Vesa"],b:["Aki","Mitja"],sa:17,sb:15},
+  {t:2,r:1,a:["Jussi","Ville"],b:["Janne","Vesa"],sa:20,sb:12},{t:2,r:1,a:["Mitja","Dan"],b:["JP","Antti"],sa:15,sb:17},
+  {t:2,r:2,a:["Jussi","Janne"],b:["Mitja","Antti"],sa:13,sb:19},{t:2,r:2,a:["Dan","JP"],b:["Vesa","Ville"],sa:4,sb:28},
+  {t:2,r:3,a:["Jussi","Mitja"],b:["Dan","Ville"],sa:23,sb:9},{t:2,r:3,a:["JP","Vesa"],b:["Antti","Janne"],sa:10,sb:22},
+  {t:2,r:4,a:["Jussi","Dan"],b:["JP","Janne"],sa:17,sb:15},{t:2,r:4,a:["Vesa","Antti"],b:["Ville","Mitja"],sa:19,sb:13},
+  {t:2,r:5,a:["Jussi","JP"],b:["Vesa","Mitja"],sa:10,sb:22},{t:2,r:5,a:["Antti","Ville"],b:["Janne","Dan"],sa:23,sb:9},
+  {t:2,r:6,a:["Jussi","Vesa"],b:["Antti","Dan"],sa:24,sb:8},{t:2,r:6,a:["Ville","Janne"],b:["Mitja","JP"],sa:19,sb:13},
+  {t:2,r:7,a:["Jussi","Antti"],b:["Ville","JP"],sa:22,sb:10},{t:2,r:7,a:["Janne","Mitja"],b:["Dan","Vesa"],sa:26,sb:6},
+  {t:3,r:1,a:["Aki","Jussi"],b:["Niilo","Ville"],sa:12,sb:20},{t:3,r:1,a:["Janne","Jere"],b:["Messi","JP"],sa:17,sb:15},
+  {t:3,r:2,a:["Aki","Niilo"],b:["Janne","JP"],sa:23,sb:9},{t:3,r:2,a:["Jere","Messi"],b:["Ville","Jussi"],sa:15,sb:17},
+  {t:3,r:3,a:["Aki","Janne"],b:["Jere","Jussi"],sa:17,sb:15},{t:3,r:3,a:["Messi","Ville"],b:["JP","Niilo"],sa:21,sb:11},
+  {t:3,r:4,a:["Aki","Jere"],b:["Messi","Niilo"],sa:9,sb:23},{t:3,r:4,a:["Ville","JP"],b:["Jussi","Janne"],sa:14,sb:18},
+  {t:3,r:5,a:["Aki","Messi"],b:["Ville","Janne"],sa:19,sb:13},{t:3,r:5,a:["JP","Jussi"],b:["Niilo","Jere"],sa:11,sb:21},
+  {t:3,r:6,a:["Aki","Ville"],b:["JP","Jere"],sa:22,sb:10},{t:3,r:6,a:["Jussi","Niilo"],b:["Janne","Messi"],sa:11,sb:21},
+  {t:3,r:7,a:["Aki","JP"],b:["Jussi","Messi"],sa:10,sb:22},{t:3,r:7,a:["Niilo","Janne"],b:["Jere","Ville"],sa:25,sb:7},
+];
+const PLAYERS=[...new Set(M.flatMap(m=>[...m.a,...m.b]))].sort();
+
+// HELPERS
+function pIn(m,p){return m.a.includes(p)||m.b.includes(p)}
+function pTeam(m,p){return m.a.includes(p)?'a':'b'}
+function res(m,p){const t=pTeam(m,p);const ms=t==='a'?m.sa:m.sb;const os=t==='a'?m.sb:m.sa;return ms>os?'W':ms<os?'L':'T'}
+function myS(m,p){return pTeam(m,p)==='a'?m.sa:m.sb}
+function opS(m,p){return pTeam(m,p)==='a'?m.sb:m.sa}
+function partner(m,p){const t=pTeam(m,p)==='a'?m.a:m.b;return t.find(x=>x!==p)}
+function playerStats(p){const ms=M.filter(m=>pIn(m,p));const w=ms.filter(m=>res(m,p)==='W').length;const l=ms.filter(m=>res(m,p)==='L').length;const t=ms.filter(m=>res(m,p)==='T').length;const pts=ms.reduce((a,m)=>a+myS(m,p),0);const conc=ms.reduce((a,m)=>a+opS(m,p),0);const tours=[...new Set(ms.map(m=>m.t))].length;return{name:p,matches:ms.length,w,l,t,pts,conc,diff:pts-conc,tours,winPct:ms.length?w/ms.length:0}}
+function getTourWinner(ti){const tM=M.filter(m=>m.t===ti);const tP=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))];let best={name:'',pts:0};tP.forEach(p=>{const pts=tM.filter(m=>pIn(m,p)).reduce((a,m)=>a+myS(m,p),0);if(pts>best.pts)best={name:p,pts}});return best.name}
+function getTourWinsMap(){const map={};TOURS.forEach((_,ti)=>{const w=getTourWinner(ti);map[w]=(map[w]||0)+1});return map}
+
+// HERO
+function renderHero(){document.getElementById('heroStats').innerHTML=`<span><b>${TOURS.length}</b> turnausta</span><span><b>${M.length}</b> ottelua</span><span><b>${PLAYERS.length}</b> pelaajaa</span>`}
+
+// RANKING
+function renderRanking(){
+  const tourWins=getTourWinsMap();
+  const stats=PLAYERS.map(p=>{const s=playerStats(p);s.tourWins=tourWins[p]||0;return s}).sort((a,b)=>b.tourWins-a.tourWins||b.winPct-a.winPct||b.diff-a.diff||b.pts-a.pts);
+  const top3=stats.slice(0,3);const pod=[top3[1],top3[0],top3[2]];const heights=[155,200,125];const labels=['2.','1.','3.'];
+  document.getElementById('podium').innerHTML=pod.map((s,i)=>`<div class="podium-col fade-up" style="animation-delay:${i*.1}s"><div class="podium-bar" style="height:${heights[i]}px"><div class="podium-rank">${labels[i]}</div><div class="podium-name">${s.name}</div><div class="podium-stat">${(s.winPct*100).toFixed(0)}% · ${s.w}V ${s.l}H</div><div class="podium-trophies">${s.tourWins?'🏆'.repeat(s.tourWins):''}</div></div></div>`).join('');
+  document.getElementById('leaderboard').innerHTML=`<thead><tr><th>#</th><th>Pelaaja</th><th class="c">🏆</th><th class="r">Ottelut</th><th class="r">V</th><th class="r">H</th><th class="r">T</th><th>V/H</th><th class="r">Voitto%</th><th class="r">P+</th><th class="r">P-</th><th class="r">+/-</th></tr></thead><tbody>${stats.map((s,i)=>{const wPct=Math.round(s.winPct*100);const wW=s.matches?(s.w/s.matches*100):0;const tW=s.matches?(s.t/s.matches*100):0;return`<tr onclick="openPlayer('${s.name}')"><td class="lb-rank">${i+1}</td><td class="lb-name">${s.name}</td><td class="trophy-cell">${s.tourWins?'🏆'.repeat(s.tourWins):'—'}</td><td class="r">${s.matches}</td><td class="r" style="color:var(--green-bright)">${s.w}</td><td class="r" style="color:var(--red)">${s.l}</td><td class="r" style="color:var(--ink3)">${s.t}</td><td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-w" style="width:${wW}%"></div><div class="lb-bar-t" style="width:${tW}%"></div><div class="lb-bar-l" style="width:${100-wW-tW}%"></div></div></td><td class="r" style="color:var(--green-bright);font-weight:600">${wPct}%</td><td class="r">${s.pts}</td><td class="r">${s.conc}</td><td class="r" style="color:${s.diff>0?'var(--green-bright)':s.diff<0?'var(--red)':'var(--ink3)'}">${s.diff>0?'+':''}${s.diff}</td></tr>`}).join('')}</tbody>`;
+}
+
+// AWARDS
+function renderAwards(){
+  const stats=PLAYERS.map(playerStats);const tourWins=getTourWinsMap();
+  let bigWin={diff:0};M.forEach(m=>{const d=Math.abs(m.sa-m.sb);if(d>bigWin.diff){bigWin={diff:d,winners:m.sa>m.sb?m.a:m.b,losers:m.sa>m.sb?m.b:m.a,ws:Math.max(m.sa,m.sb),ls:Math.min(m.sa,m.sb),tour:m.t}}});
+  let mostPts={s:0};M.forEach(m=>{if(m.sa>mostPts.s)mostPts={s:m.sa,team:m.a,tour:m.t};if(m.sb>mostPts.s)mostPts={s:m.sb,team:m.b,tour:m.t}});
+  let tightest={diff:99};M.forEach(m=>{const d=Math.abs(m.sa-m.sb);if(d>0&&d<tightest.diff)tightest={diff:d,a:m.a,b:m.b,sa:m.sa,sb:m.sb,tour:m.t}});
+  const mostMatches=[...stats].sort((a,b)=>b.matches-a.matches)[0];
+  function getStreak(p){const ms=M.filter(m=>pIn(m,p));let max=0,cur=0;ms.forEach(m=>{if(res(m,p)==='W'){cur++;if(cur>max)max=cur}else cur=0});return max}
+  let bestStreak={name:'',streak:0};PLAYERS.forEach(p=>{const s=getStreak(p);if(s>bestStreak.streak)bestStreak={name:p,streak:s}});
+  const mostTies=[...stats].sort((a,b)=>b.t-a.t)[0];
+  const mostTW=Object.entries(tourWins).sort((a,b)=>b[1]-a[1])[0];
+  // Best win%
+  const bestWinPct=[...stats].sort((a,b)=>b.winPct-a.winPct||b.w-a.w)[0];
+  // Best pair (min 2 matches)
+  const pairMap={};M.forEach(m=>{const ka=[...m.a].sort().join('|');if(!pairMap[ka])pairMap[ka]={n:[...m.a].sort(),w:0,l:0,t:0};if(m.sa>m.sb)pairMap[ka].w++;else if(m.sa<m.sb)pairMap[ka].l++;else pairMap[ka].t++;const kb=[...m.b].sort().join('|');if(!pairMap[kb])pairMap[kb]={n:[...m.b].sort(),w:0,l:0,t:0};if(m.sb>m.sa)pairMap[kb].w++;else if(m.sb<m.sa)pairMap[kb].l++;else pairMap[kb].t++});
+  const bestPair=Object.values(pairMap).map(p=>({...p,tot:p.w+p.l+p.t,pct:p.w/(p.w+p.l+p.t)})).filter(p=>p.tot>=2).sort((a,b)=>b.pct-a.pct||b.w-a.w)[0];
+  // Close wins king (margin <=4)
+  const closeWins={};M.forEach(m=>{const d=Math.abs(m.sa-m.sb);if(d>0&&d<=4){const ws=m.sa>m.sb?m.a:m.b;ws.forEach(p=>{closeWins[p]=(closeWins[p]||0)+1})}});
+  const closeKing=Object.entries(closeWins).sort((a,b)=>b[1]-a[1])[0];
+  // Mr. Tasainen (closest avg to 16.0)
+  const avgDiffs=stats.map(s=>({name:s.name,avg:s.pts/s.matches,dist:Math.abs(s.pts/s.matches-16)})).sort((a,b)=>a.dist-b.dist)[0];
+  const awards=[
+    {icon:'🏆',title:'Eniten turnausvoittoja',value:mostTW[0],desc:`${mostTW[1]} turnausvoittoa`},
+    {icon:'🥇',title:'Paras voittoprosentti',value:`${Math.round(bestWinPct.winPct*100)}%`,desc:`${bestWinPct.name} · ${bestWinPct.w} voittoa / ${bestWinPct.matches} ottelua`},
+    {icon:'👊',title:'Paras parivaljakko',value:`${bestPair.n.join(' & ')}`,desc:`${bestPair.w}V ${bestPair.l}H ${bestPair.t}T · ${Math.round(bestPair.pct*100)}% voitto%`},
+    {icon:'🔥',title:'Pisin voittoputki',value:bestStreak.name,desc:`${bestStreak.streak} voittoa putkeen`},
+    {icon:'💥',title:'Suurin murskavoitto',value:`${bigWin.ws}–${bigWin.ls}`,desc:`${bigWin.winners.join(' & ')} vs ${bigWin.losers.join(' & ')} · ${TOURS[bigWin.tour].name}`},
+    {icon:'⚡',title:'Eniten pisteitä ottelussa',value:`${mostPts.s} pistettä`,desc:`${mostPts.team.join(' & ')} · ${TOURS[mostPts.tour].name}`},
+    {icon:'🎯',title:'Tiukin ottelu',value:`${tightest.sa}–${tightest.sb}`,desc:`${tightest.a.join(' & ')} vs ${tightest.b.join(' & ')}`},
+    {icon:'🧊',title:'Viimeistelijä',value:closeKing[0],desc:`${closeKing[1]} niukkaa voittoa (marginaali ≤4)`},
+    {icon:'⚖️',title:'Mr. Tasainen',value:`${avgDiffs.avg.toFixed(1)} p/ottelu`,desc:`${avgDiffs.name} — lähimpänä täydellistä 16.0 keskiarvoa`},
+    {icon:'🤝',title:'Tasapelien kuningas',value:mostTies.name,desc:`${mostTies.t} tasapeliä`},
+    {icon:'💪',title:'Eniten otteluita',value:mostMatches.name,desc:`${mostMatches.matches} ottelua · ${mostMatches.tours} turnausta`},
+    (() => { const r7=PLAYERS.map(p=>{const ms=M.filter(m=>pIn(m,p)&&m.r===7);return{name:p,cnt:ms.length,avg:ms.length>=2?ms.reduce((a,m)=>a+myS(m,p),0)/ms.length:0}}).filter(p=>p.cnt>=2).sort((a,b)=>b.avg-a.avg)[0]; return {icon:'🌙',title:'Loppukirin mestari',value:r7.name,desc:`${r7.avg.toFixed(1)} p/ottelu viimeisessä erässä (${r7.cnt} finaalia)`}})(),
+  ];
+  document.getElementById('awards').innerHTML=awards.map(a=>`<div class="award-card"><div class="award-icon">${a.icon}</div><div class="award-title">${a.title}</div><div class="award-value">${a.value}</div><div class="award-desc">${a.desc}</div></div>`).join('');
+}
+
+// H2H
+let h2hSel=[null,null];
+function buildH2HChips(){document.getElementById('h2hChips').innerHTML=PLAYERS.map(p=>`<button class="p-chip" data-p="${p}" onclick="selectH2H('${p}')">${p}</button>`).join('')}
+function selectH2H(p){
+  if(h2hSel[0]===p){h2hSel[0]=null}else if(h2hSel[1]===p){h2hSel[1]=null}else if(!h2hSel[0]){h2hSel[0]=p}else if(!h2hSel[1]){h2hSel[1]=p}else{h2hSel=[p,null]}
+  document.querySelectorAll('#h2hChips .p-chip').forEach(b=>{b.classList.remove('sel1','sel2');if(h2hSel[0]===b.dataset.p)b.classList.add('sel1');if(h2hSel[1]===b.dataset.p)b.classList.add('sel2')});
+  if(h2hSel[0]&&h2hSel[1])renderH2H(h2hSel[0],h2hSel[1]);else document.getElementById('h2hContent').innerHTML=`<div class="empty-state"><div class="big">⚔️</div>Valitse kaksi pelaajaa</div>`;
+}
+function renderH2H(p1,p2){
+  const together=M.filter(m=>(m.a.includes(p1)&&m.a.includes(p2))||(m.b.includes(p1)&&m.b.includes(p2)));
+  const against=M.filter(m=>(m.a.includes(p1)&&m.b.includes(p2))||(m.a.includes(p2)&&m.b.includes(p1)));
+  const p1w=against.filter(m=>res(m,p1)==='W').length;const p2w=against.filter(m=>res(m,p2)==='W').length;const ties=against.filter(m=>res(m,p1)==='T').length;
+  const togW=together.filter(m=>res(m,p1)==='W').length;const togL=together.length-togW-together.filter(m=>res(m,p1)==='T').length;const togT=together.filter(m=>res(m,p1)==='T').length;
+  function mc(m,hl){const s1c=m.sa>m.sb?'w':m.sa<m.sb?'l':'t';const s2c=m.sb>m.sa?'w':m.sb<m.sa?'l':'t';function hn(n){if(n===hl[0])return`<span style="color:var(--accent)">${n}</span>`;if(n===hl[1])return`<span style="color:var(--blue)">${n}</span>`;return n}return`<div class="match-row"><div class="match-meta">${TOURS[m.t].name}<br>Erä ${m.r}</div><div class="match-team">${m.a.map(hn).join(' & ')}</div><div class="match-score"><span class="${s1c}">${m.sa}</span><span style="color:var(--ink3);font-size:13px"> – </span><span class="${s2c}">${m.sb}</span></div><div class="match-team right">${m.b.map(hn).join(' & ')}</div><div></div></div>`}
+  document.getElementById('h2hContent').innerHTML=`<div class="h2h-box fade-up"><div class="h2h-side"><div class="h2h-name" style="color:var(--accent)">${p1}</div><div class="h2h-wins">${p1w}</div><div class="h2h-sub">voittoa vastakkain</div></div><div class="h2h-center"><div style="font-size:12px;color:var(--ink2);margin-bottom:2px">VASTAKKAIN</div><div style="font-size:18px;font-weight:700">${against.length} ottelua</div><div style="font-size:12px;color:var(--ink2);margin-top:2px">${ties} tasapeli${ties!==1?'a':''}</div><div style="margin-top:16px;font-size:12px;color:var(--ink2)">YHDESSÄ</div><div style="font-size:22px;font-weight:700">${together.length} ottelua</div><div style="font-size:12px;color:var(--green-bright)">${togW}V ${togL}H${togT?' '+togT+'T':''}</div></div><div class="h2h-side"><div class="h2h-name" style="color:var(--blue)">${p2}</div><div class="h2h-wins">${p2w}</div><div class="h2h-sub">voittoa vastakkain</div></div></div>
+  ${against.length?`<div class="sub-title">Vastakkain (${against.length})</div><div class="match-list">${against.map(m=>mc(m,[p1,p2])).join('')}</div>`:''}
+  ${together.length?`<div class="sub-title">Samassa joukkueessa (${together.length})</div><div class="match-list">${together.map(m=>mc(m,[p1,p2])).join('')}</div>`:''}
+  ${!against.length&&!together.length?'<div class="empty-state">Ei yhteisiä otteluita</div>':''}`;
+}
+
+// TOURNAMENTS
+function renderTournaments(){
+  document.getElementById('tourGrid').innerHTML=TOURS.map((tour,ti)=>{const w=getTourWinner(ti);const tM=M.filter(m=>m.t===ti);const n=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))].length;return`<div class="tour-card" onclick="showTourDetail(${ti})"><div class="tour-num">${tour.id}</div><div class="tour-name">${tour.name}</div><div class="tour-date">${tour.date} · ${n} pelaajaa</div><div class="tour-winner">🏆 <b>${w}</b></div></div>`}).join('');
+}
+function showTourDetail(ti){
+  const tM=M.filter(m=>m.t===ti);const tour=TOURS[ti];const tP=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))];
+  const standings=tP.map(p=>{const ms=tM.filter(m=>pIn(m,p));const pts=ms.reduce((a,m)=>a+myS(m,p),0);const conc=ms.reduce((a,m)=>a+opS(m,p),0);const w=ms.filter(m=>res(m,p)==='W').length;const l=ms.filter(m=>res(m,p)==='L').length;const t=ms.filter(m=>res(m,p)==='T').length;return{name:p,pts,conc,diff:pts-conc,w,l,t}}).sort((a,b)=>b.pts-a.pts);
+  const rounds=[...new Set(tM.map(m=>m.r))].sort((a,b)=>a-b);
+  let html=`<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px;margin-top:20px;margin-bottom:20px"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px"><div><div style="font-size:22px;font-weight:800;color:var(--white)">${tour.name}</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2)">${tour.date}</div></div><a href="${tour.url}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-decoration:none">Padelution ↗</a></div><table class="lb-table"><thead><tr><th>#</th><th>Pelaaja</th><th class="r">V</th><th class="r">H</th><th class="r">T</th><th class="r">P+</th><th class="r">P-</th><th class="r">+/-</th></tr></thead><tbody>${standings.map((s,i)=>`<tr onclick="openPlayer('${s.name}')"><td class="lb-rank">${i+1}</td><td class="lb-name">${i===0?'🏆 ':''}${s.name}</td><td class="r" style="color:var(--green-bright)">${s.w}</td><td class="r" style="color:var(--red)">${s.l}</td><td class="r" style="color:var(--ink3)">${s.t}</td><td class="r">${s.pts}</td><td class="r">${s.conc}</td><td class="r" style="color:${s.diff>0?'var(--green-bright)':s.diff<0?'var(--red)':'var(--ink3)'}">${s.diff>0?'+':''}${s.diff}</td></tr>`).join('')}</tbody></table></div>`;
+  rounds.forEach(r=>{const rm=tM.filter(m=>m.r===r);html+=`<div class="sub-title" style="margin-bottom:6px">Erä ${r}</div><div class="match-list">`;rm.forEach(m=>{const s1c=m.sa>m.sb?'w':m.sa<m.sb?'l':'t';const s2c=m.sb>m.sa?'w':m.sb<m.sa?'l':'t';html+=`<div class="match-row"><div class="match-meta">Erä ${m.r}</div><div class="match-team">${m.a.join(' & ')}</div><div class="match-score"><span class="${s1c}">${m.sa}</span><span style="color:var(--ink3);font-size:13px"> – </span><span class="${s2c}">${m.sb}</span></div><div class="match-team right">${m.b.join(' & ')}</div><div></div></div>`});html+=`</div>`});
+  document.getElementById('tourDetail').innerHTML=html;document.getElementById('tourDetail').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// PLAYER DETAIL OVERLAY
+function openPlayer(name){
+  const ms=M.filter(m=>pIn(m,name));const s=playerStats(name);const tourWins=getTourWinsMap();const tw=tourWins[name]||0;
+  const placements=TOURS.map((tour,ti)=>{const tM=M.filter(m=>m.t===ti);if(!tM.some(m=>pIn(m,name)))return null;const tP=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))];const standings=tP.map(pp=>{const pts=tM.filter(m=>pIn(m,pp)).reduce((a,m)=>a+myS(m,pp),0);return{name:pp,pts}}).sort((a,b)=>b.pts-a.pts);const rank=standings.findIndex(x=>x.name===name)+1;return{tour:tour.name,rank,pts:standings.find(x=>x.name===name).pts}}).filter(Boolean);
+  const partnerMap={};ms.forEach(m=>{const pa=partner(m,name);if(!partnerMap[pa])partnerMap[pa]={w:0,l:0,t:0};const r=res(m,name);partnerMap[pa][r.toLowerCase()]++});
+  const partnerList=Object.entries(partnerMap).sort((a,b)=>{const pa=a[1].w/(a[1].w+a[1].l+a[1].t),pb=b[1].w/(b[1].w+b[1].l+b[1].t);return pb-pa});
+
+  document.getElementById('detailPanel').innerHTML=`
+    <button class="detail-close" onclick="closePlayer()">✕</button>
+    <div class="detail-name">${name}</div>
+    <div class="detail-sub">${s.tours} turnausta · ${s.matches} ottelua${tw?' · 🏆 ×'+tw:''}</div>
+    <div class="d-stats">
+      <div class="d-stat"><div class="d-stat-label">Voitot</div><div class="d-stat-val" style="color:var(--green-bright)">${s.w}</div></div>
+      <div class="d-stat"><div class="d-stat-label">Tappiot</div><div class="d-stat-val" style="color:var(--red)">${s.l}</div></div>
+      <div class="d-stat"><div class="d-stat-label">Tasapelit</div><div class="d-stat-val" style="color:var(--ink3)">${s.t}</div></div>
+      <div class="d-stat"><div class="d-stat-label">Voitto%</div><div class="d-stat-val" style="color:var(--green-bright)">${Math.round(s.winPct*100)}%</div></div>
+      <div class="d-stat"><div class="d-stat-label">Pisteet</div><div class="d-stat-val">${s.pts}</div></div>
+      <div class="d-stat"><div class="d-stat-label">Päästetty</div><div class="d-stat-val">${s.conc}</div></div>
+      <div class="d-stat"><div class="d-stat-label">+/-</div><div class="d-stat-val" style="color:${s.diff>0?'var(--green-bright)':s.diff<0?'var(--red)':'var(--ink3)'}">${s.diff>0?'+':''}${s.diff}</div></div>
+      <div class="d-stat"><div class="d-stat-label">Avg/ottelu</div><div class="d-stat-val">${(s.pts/s.matches).toFixed(1)}</div></div>
+    </div>
+    <div class="sub-title">Turnaussijoitukset</div>
+    <div class="placement-row">${placements.map(pl=>`<div class="placement"><div class="placement-tour">${pl.tour}</div><div class="placement-rank" style="color:${pl.rank===1?'var(--gold)':pl.rank===2?'var(--silver)':pl.rank===3?'var(--bronze)':'var(--ink)'}">${pl.rank===1?'🏆 ':''}${pl.rank}.</div><div class="placement-pts">${pl.pts} p</div></div>`).join('')}</div>
+    <div class="sub-title">Paritilastot</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:20px">${partnerList.map(([pn,ps])=>{const tot=ps.w+ps.l+ps.t;const pct=Math.round(ps.w/tot*100);return`<div class="partner-row"><div class="partner-name">${pn}</div><div class="partner-record">${ps.w}V ${ps.l}H${ps.t?' '+ps.t+'T':''}</div><div class="partner-bar"><div class="partner-bar-fill" style="width:${pct}%;background:${pct>=50?'var(--green)':'var(--red)'}"></div></div><div class="partner-pct" style="color:${pct>=50?'var(--green-bright)':'var(--red)'}">${pct}%</div></div>`}).join('')}</div>
+    <div class="sub-title">Kaikki ottelut (${ms.length})</div>
+    <div class="match-list">${ms.map(m=>{const r=res(m,name);const myTeam=pTeam(m,name)==='a'?m.a:m.b;const oppTeam=pTeam(m,name)==='a'?m.b:m.a;const mySc=myS(m,name),opSc=opS(m,name);const s1c=mySc>opSc?'w':mySc<opSc?'l':'t';const s2c=opSc>mySc?'w':opSc<mySc?'l':'t';return`<div class="match-row"><div class="match-meta">${TOURS[m.t].name}<br>Erä ${m.r}</div><div class="match-team">${myTeam.join(' & ')}</div><div class="match-score"><span class="${s1c}">${mySc}</span><span style="color:var(--ink3);font-size:13px"> – </span><span class="${s2c}">${opSc}</span></div><div class="match-team right">${oppTeam.join(' & ')}</div><div class="match-badge ${r}">${r==='W'?'VOITTO':r==='L'?'TAPPIO':'TASA'}</div></div>`}).join('')}</div>`;
+  document.getElementById('detailOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closePlayer(){document.getElementById('detailOverlay').classList.remove('open');document.body.style.overflow=''}
+document.getElementById('detailOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closePlayer()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer()});
+
+// NAV
+document.querySelectorAll('.nav a').forEach(a=>{a.addEventListener('click',()=>{document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));a.classList.add('active')})});
+const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)document.querySelectorAll('.nav a').forEach(a=>{a.classList.toggle('active',a.getAttribute('data-sec')===e.target.id)})})},{threshold:0.2});
+['ranking','palkinnot','h2h','verkosto','kehitys','turnaukset'].forEach(id=>observer.observe(document.getElementById(id)));
+
+// NETWORK
+function drawNetwork(){
+  const canvas=document.getElementById('networkCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth;const H=canvas.offsetHeight;
+  canvas.width=W*devicePixelRatio;canvas.height=H*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const edges={};
+  M.forEach(m=>{
+    const addEdge=(a,b,won)=>{const key=[a,b].sort().join('|');if(!edges[key])edges[key]={a,b,together:0,wins:0};edges[key].together++;if(won)edges[key].wins++};
+    const w1=m.sa>m.sb;
+    addEdge(m.a[0],m.a[1],w1);
+    addEdge(m.b[0],m.b[1],!w1);
+  });
+  const nodeMap={};const cx=W/2,cy=H/2,r=Math.min(W,H)*0.36;
+  PLAYERS.forEach((p,i)=>{const angle=(i/PLAYERS.length)*Math.PI*2-Math.PI/2;nodeMap[p]={x:cx+Math.cos(angle)*r,y:cy+Math.sin(angle)*r}});
+  ctx.clearRect(0,0,W,H);
+  // Edges
+  Object.values(edges).filter(e=>e.together>0).forEach(e=>{
+    const na=nodeMap[e.a],nb=nodeMap[e.b];if(!na||!nb)return;
+    const winRatio=e.wins/e.together;
+    const alpha=0.15+(e.together/8)*0.55;
+    const width=1+e.together*0.7;
+    const cr=winRatio>0.6?77:winRatio<0.4?232:100;
+    const cg=winRatio>0.6?212:winRatio<0.4?80:158;
+    const cb=winRatio>0.6?104:winRatio<0.4?64:120;
+    ctx.beginPath();ctx.moveTo(na.x,na.y);ctx.lineTo(nb.x,nb.y);
+    ctx.strokeStyle=`rgba(${cr},${cg},${cb},${Math.min(alpha,0.8)})`;ctx.lineWidth=width;ctx.stroke();
+  });
+  // Nodes
+  PLAYERS.forEach(p=>{
+    const n=nodeMap[p];const ms=M.filter(m=>pIn(m,p));
+    const wins=ms.filter(m=>res(m,p)==='W').length;const winPct=wins/ms.length;
+    const nodeR=16+ms.length*0.7;
+    ctx.beginPath();ctx.arc(n.x,n.y,nodeR,0,Math.PI*2);ctx.fillStyle='#0a2010';ctx.fill();
+    ctx.beginPath();ctx.arc(n.x,n.y,nodeR,-Math.PI/2,-Math.PI/2+winPct*Math.PI*2);ctx.strokeStyle='#4dd468';ctx.lineWidth=4;ctx.stroke();
+    ctx.beginPath();ctx.arc(n.x,n.y,nodeR,-Math.PI/2+winPct*Math.PI*2,-Math.PI/2+Math.PI*2);ctx.strokeStyle='#e85040';ctx.lineWidth=4;ctx.stroke();
+    ctx.fillStyle='#f2f7f3';ctx.font='bold 11px Syne,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(p.length>6?p.slice(0,5)+'.':p,n.x,n.y);
+    ctx.font='10px JetBrains Mono,monospace';ctx.fillStyle='#b0cfb8';
+    ctx.fillText(Math.round(winPct*100)+'%',n.x,n.y+nodeR+12);
+  });
+  // Click to open player
+  canvas.onclick=(e)=>{const rect=canvas.getBoundingClientRect();const mx=e.clientX-rect.left;const my=e.clientY-rect.top;
+    for(const[p,n]of Object.entries(nodeMap)){if(Math.hypot(mx-n.x,my-n.y)<28){openPlayer(p);return}}};
+  canvas.onmousemove=(e)=>{const rect=canvas.getBoundingClientRect();const mx=e.clientX-rect.left;const my=e.clientY-rect.top;
+    let found=null;for(const[p,n]of Object.entries(nodeMap)){if(Math.hypot(mx-n.x,my-n.y)<28){found=p;break}}
+    canvas.style.cursor=found?'pointer':'default';canvas.title=found?found+' — klikkaa profiiliin':''};
+}
+
+// KEHITYS
+function renderKehitys(){
+  const pData=PLAYERS.map(p=>{
+    const tourIds=[...new Set(M.filter(m=>pIn(m,p)).map(m=>m.t))].sort();
+    if(tourIds.length<2)return null;
+    const perTour=tourIds.map(ti=>{
+      const ms=M.filter(m=>m.t===ti&&pIn(m,p));
+      const w=ms.filter(m=>res(m,p)==='W').length;
+      const pts=ms.reduce((a,m)=>a+myS(m,p),0);
+      const tP=[...new Set(M.filter(m=>m.t===ti).flatMap(m=>[...m.a,...m.b]))];
+      const standings=tP.map(pp=>({name:pp,pts:M.filter(m=>m.t===ti&&pIn(m,pp)).reduce((a,m)=>a+myS(m,pp),0)})).sort((a,b)=>b.pts-a.pts);
+      const rank=standings.findIndex(x=>x.name===p)+1;
+      return{tour:ti,w,l:ms.length-w-ms.filter(m=>res(m,p)==='T').length,matches:ms.length,pts,winPct:w/ms.length,rank,avg:pts/ms.length};
+    });
+    const first=perTour[0],last=perTour[perTour.length-1];
+    const winPctDiff=last.winPct-first.winPct;
+    const avgDiff=last.avg-first.avg;
+    return{name:p,tourIds,perTour,winPctDiff,avgDiff,firstWinPct:first.winPct,lastWinPct:last.winPct,firstRank:first.rank,lastRank:last.rank};
+  }).filter(Boolean).sort((a,b)=>b.winPctDiff-a.winPctDiff||b.avgDiff-a.avgDiff);
+
+  const top3=pData.slice(0,3);
+  const medals=['🥇','🥈','🥉'];
+
+  let html='<div class="kehitys-grid">';
+  top3.forEach((pd,idx)=>{
+    const dir=pd.winPctDiff>0.05?'up':pd.winPctDiff<-0.05?'down':'flat';
+    const diffLabel=pd.winPctDiff>0?'+'+Math.round(pd.winPctDiff*100)+'%':pd.winPctDiff<0?Math.round(pd.winPctDiff*100)+'%':'±0%';
+    const maxPts=Math.max(...pd.perTour.map(t=>t.pts));
+
+    html+=`<div class="kehitys-card" onclick="openPlayer('${pd.name}')">
+      <div class="kehitys-header">
+        <div class="kehitys-name">${medals[idx]} ${pd.name}</div>
+        <div class="kehitys-badge ${dir}">${dir==='up'?'↑':dir==='down'?'↓':'→'} ${diffLabel}</div>
+      </div>
+      <div class="kehitys-arrow">
+        <span class="from">Voitto% ${Math.round(pd.firstWinPct*100)}%</span>
+        <span class="arr">→</span>
+        <span class="to">${Math.round(pd.lastWinPct*100)}%</span>
+        <span style="margin-left:12px" class="from">Sij. #${pd.firstRank}</span>
+        <span class="arr">→</span>
+        <span class="to">#${pd.lastRank}</span>
+      </div>
+      <div class="kehitys-sparkline">
+        ${pd.perTour.map(t=>{
+          const h=maxPts>0?Math.round((t.pts/maxPts)*44):0;
+          const col=t.winPct>=0.5?'var(--green)':'var(--red)';
+          return`<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+            <div class="kehitys-bar" style="height:${Math.max(h,4)}px;background:${col};width:100%">
+              <div class="kehitys-bar-label">${t.pts}p</div>
+            </div>
+            <div class="kehitys-bar-tour">T${t.tour+1}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="kehitys-meta">
+        <span>${pd.tourIds.length} turnausta</span>
+        <span>Avg ${pd.perTour[pd.perTour.length-1].avg.toFixed(1)} p/ottelu</span>
+        <span>${pd.perTour[pd.perTour.length-1].w}V ${pd.perTour[pd.perTour.length-1].l}H viimeisin</span>
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+
+  document.getElementById('kehitysContent').innerHTML=html;
+}
+
+// INIT
+renderHero();renderRanking();renderAwards();buildH2HChips();drawNetwork();renderKehitys();renderTournaments();
+</script>
+</body>
+</html>

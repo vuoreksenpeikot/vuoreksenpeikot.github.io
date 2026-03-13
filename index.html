@@ -457,7 +457,10 @@ function renderKehitys(){
     const first=perTour[0],last=perTour[perTour.length-1];
     const winPctDiff=last.winPct-first.winPct;
     const avgDiff=last.avg-first.avg;
-    const trend=(last.pts-first.pts)/(tourIds.length-1);
+    // Lineaarinen regressio avg/ottelu — oikea kehitystrendin mittari eri kokoisissa turnauksissa
+    const _n=perTour.length,_xm=(_n-1)/2,_ym=perTour.reduce((a,t)=>a+t.avg,0)/_n;
+    const _den=perTour.reduce((s,_,i)=>s+(i-_xm)**2,0);
+    const trend=_den>0?perTour.reduce((s,t,i)=>s+(i-_xm)*(t.avg-_ym),0)/_den:0;
     return{name:p,tourIds,perTour,winPctDiff,avgDiff,trend,firstWinPct:first.winPct,lastWinPct:last.winPct,firstRank:first.rank,lastRank:last.rank};
   }).filter(x=>x&&x.tourIds.length>=3).sort((a,b)=>b.trend-a.trend||b.avgDiff-a.avgDiff);
 

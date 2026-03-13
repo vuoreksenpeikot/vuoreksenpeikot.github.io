@@ -469,11 +469,11 @@ function renderKehitys(){
 
   let html='<div class="kehitys-grid">';
   top3.forEach((pd,idx)=>{
-    const firstAvg=pd.perTour[0].avg,lastAvg=pd.perTour[pd.perTour.length-1].avg;
-    const avgChange=lastAvg-firstAvg;
-    const dir=avgChange>0.3?'up':avgChange<-0.3?'down':'flat';
-    const diffLabel=(avgChange>0?'+':'')+avgChange.toFixed(1)+' p/ottelu';
-    const maxAvg=Math.max(...pd.perTour.map(t=>t.avg));
+    const firstPts=pd.perTour[0].pts,lastPts=pd.perTour[pd.perTour.length-1].pts;
+    const ptsChange=lastPts-firstPts;
+    const dir=ptsChange>2?'up':ptsChange<-2?'down':'flat';
+    const diffLabel=(ptsChange>0?'+':'')+ptsChange+' p';
+    const maxPts=Math.max(...pd.perTour.map(t=>t.pts));
 
     html+=`<div class="kehitys-card" onclick="openPlayer('${pd.name}')">
       <div class="kehitys-header">
@@ -481,17 +481,17 @@ function renderKehitys(){
         <div class="kehitys-badge ${dir}">${dir==='up'?'↑':dir==='down'?'↓':'→'} ${diffLabel}</div>
       </div>
       <div class="kehitys-arrow">
-        <span class="from">${firstAvg.toFixed(1)} p/ottelu</span>
+        <span class="from">${firstPts} p/turnaus</span>
         <span class="arr">→</span>
-        <span class="to">${lastAvg.toFixed(1)} p/ottelu</span>
+        <span class="to">${lastPts} p/turnaus</span>
       </div>
       <div class="kehitys-sparkline">
         ${pd.perTour.map(t=>{
-          const h=maxAvg>0?Math.round((t.avg/maxAvg)*44):0;
+          const h=maxPts>0?Math.round((t.pts/maxPts)*44):0;
           const col=t.winPct>=0.5?'var(--green)':'var(--red)';
           return`<div style="flex:1;display:flex;flex-direction:column;align-items:center">
             <div class="kehitys-bar" style="height:${Math.max(h,4)}px;background:${col};width:100%">
-              <div class="kehitys-bar-label">${t.avg.toFixed(1)}</div>
+              <div class="kehitys-bar-label">${t.pts}p</div>
             </div>
             <div class="kehitys-bar-tour">T${t.tour+1}</div>
           </div>`;
@@ -499,7 +499,7 @@ function renderKehitys(){
       </div>
       <div class="kehitys-meta">
         <span>${pd.tourIds.length} turnausta</span>
-        <span>Viimeisin: ${lastAvg.toFixed(1)} p/ottelu</span>
+        <span>Viimeisin: ${lastPts} p</span>
         <span>${pd.perTour[pd.perTour.length-1].w}V ${pd.perTour[pd.perTour.length-1].l}H viimeisin</span>
       </div>
     </div>`;

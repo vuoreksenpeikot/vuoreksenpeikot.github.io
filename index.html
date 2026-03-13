@@ -241,10 +241,9 @@ footer a:hover{text-decoration:underline}
   </div>
   
   <div>
-    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Pistemäärän mukaan</div>
-    <div style="font-size:22px;font-weight:800;letter-spacing:-1px;margin-bottom:20px;color:var(--white)">Parhaat pelaajat</div>
-    <table class="lb-table" id="leaderboard"></table>
-    <div style="text-align:center;margin-top:20px" id="showMoreContainer"></div>
+    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">PPT Rating</div>
+    <div style="font-size:22px;font-weight:800;letter-spacing:-1px;margin-bottom:20px;color:var(--white)">PPT Rating <span style="font-size:0.55em;font-weight:600;color:var(--ink3);letter-spacing:-0.5px">(Peikot Padel Tour Rating)</span></div>
+    <div id="eloContent"></div>
   </div>
 </section>
 
@@ -301,19 +300,9 @@ function getTourWinsMap(){const map={};TOURS.forEach((_,ti)=>{const w=getTourWin
 function renderHero(){document.getElementById('heroStats').innerHTML=`<span><b>${TOURS.length}</b> turnausta</span><span><b>${M.length}</b> ottelua</span><span><b>${PLAYERS.length}</b> pelaajaa</span>`}
 
 // RANKING
-let rankingShowAll=false;
 function renderRanking(){
-  // TURNAUSHISTORIA
   document.getElementById('tourWinners').innerHTML=TOURS.map((tour,ti)=>{const w=getTourWinner(ti);const tM=M.filter(m=>m.t===ti);const n=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))].length;const tourPts=tM.filter(m=>pIn(m,w)).reduce((a,m)=>a+myS(m,w),0);const concPts=tM.filter(m=>pIn(m,w)).reduce((a,m)=>a+opS(m,w),0);const diff=tourPts-concPts;const wm=tM.filter(m=>pIn(m,w));const wins=wm.filter(m=>res(m,w)==='W').length;const losses=wm.filter(m=>res(m,w)==='L').length;const ties=wm.filter(m=>res(m,w)==='T').length;const avg=(tourPts/wm.length).toFixed(1);return`<div class="tour-card" onclick="showTourDetail(${ti})"><div class="tour-num">${tour.id}</div><div class="tour-name">${tour.name}</div><div class="tour-date">${tour.date} · ${n} pelaajaa</div><div class="tour-winner" style="display:flex;flex-direction:column;gap:4px"><div style="font-size:20px;font-weight:800">🏆 ${w}</div><div style="font-size:12px;display:flex;gap:12px;align-items:center"><span style="color:${diff>0?'var(--green-bright)':diff<0?'var(--red)':'var(--ink3)'}">${diff>0?'+':''}${diff} p</span><span style="color:var(--ink2)">${avg} ka</span><div style="font-size:11px;color:var(--ink2);display:flex;gap:8px"><span style="color:var(--green-bright)">${wins}V</span><span style="color:var(--red)">${losses}H</span><span style="color:var(--ink3)">${ties}T</span></div></div></div></div>`}).join('');
-  
-  // +/- RANKING
-  const tourWins=getTourWinsMap();
-  const stats=PLAYERS.map(p=>{const s=playerStats(p);return s}).sort((a,b)=>b.diff-a.diff||b.pts-a.pts);
-  const displayStats=rankingShowAll?stats:stats.slice(0,10);
-  document.getElementById('leaderboard').innerHTML=`<thead><tr><th>#</th><th>Pelaaja</th><th class="r">Ottelut</th><th class="r">V</th><th class="r">H</th><th class="r">T</th><th>V/H</th><th class="r">Voitto%</th><th class="r">P+</th><th class="r">P-</th><th class="r">+/-</th></tr></thead><tbody>${displayStats.map((s,i)=>{const num=rankingShowAll?stats.indexOf(s)+1:i+1;const wPct=Math.round(s.winPct*100);const wW=s.matches?(s.w/s.matches*100):0;const tW=s.matches?(s.t/s.matches*100):0;const tw=tourWins[s.name]||0;return`<tr onclick="openPlayer('${s.name}')"><td class="lb-rank">${num}</td><td class="lb-name">${s.name}${tw?' 🏆'.repeat(tw):''}</td><td class="r">${s.matches}</td><td class="r" style="color:var(--green-bright)">${s.w}</td><td class="r" style="color:var(--red)">${s.l}</td><td class="r" style="color:var(--ink3)">${s.t}</td><td class="lb-bar-cell"><div class="lb-bar-wrap"><div class="lb-bar-w" style="width:${wW}%"></div><div class="lb-bar-t" style="width:${tW}%"></div><div class="lb-bar-l" style="width:${100-wW-tW}%"></div></div></td><td class="r" style="color:var(--green-bright);font-weight:600">${wPct}%</td><td class="r">${s.pts}</td><td class="r">${s.conc}</td><td class="r" style="color:${s.diff>0?'var(--green-bright)':s.diff<0?'var(--red)':'var(--ink3)'};font-weight:600">${s.diff>0?'+':''}${s.diff}</td></tr>`}).join('')}</tbody>`;
-  document.getElementById('showMoreContainer').innerHTML=stats.length>10?`<button onclick="toggleRankingAll()" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:10px 20px;border:1px solid var(--border);background:var(--card);color:var(--ink);border-radius:6px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--border2)';this.style.background='var(--card2)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">${rankingShowAll?'Piilota':'Näytä kaikki'} (${stats.length})</button>`:'';
 }
-function toggleRankingAll(){rankingShowAll=!rankingShowAll;renderRanking();}
 
 // AWARDS
 function renderAwards(){
@@ -422,6 +411,7 @@ function openPlayer(name){
       <div class="d-stat"><div class="d-stat-label">Päästetty</div><div class="d-stat-val">${s.conc}</div></div>
       <div class="d-stat"><div class="d-stat-label">+/-</div><div class="d-stat-val" style="color:${s.diff>0?'var(--green-bright)':s.diff<0?'var(--red)':'var(--ink3)'}">${s.diff>0?'+':''}${s.diff}</div></div>
       <div class="d-stat"><div class="d-stat-label">Avg/ottelu</div><div class="d-stat-val">${(s.pts/s.matches).toFixed(1)}</div></div>
+      <div class="d-stat"><div class="d-stat-label">PPT Rating</div><div class="d-stat-val" style="color:${ELO_RATINGS[name]>=1000?'var(--green-bright)':'var(--red)'}">${ELO_RATINGS[name]}</div></div>
     </div>
     <div class="sub-title">Turnaussijoitukset</div>
     <div class="placement-row">${placements.map(pl=>`<div class="placement"><div class="placement-tour">${pl.tour}</div><div class="placement-rank" style="color:${pl.rank===1?'var(--gold)':pl.rank===2?'var(--silver)':pl.rank===3?'var(--bronze)':'var(--ink)'}">${pl.rank===1?'🏆 ':''}${pl.rank}.</div><div class="placement-pts">${pl.pts} p</div></div>`).join('')}</div>
@@ -510,9 +500,47 @@ function renderKehitys(){
   document.getElementById('kehitysContent').innerHTML=html;
 }
 
+// ELO
+let eloShowAll=false;
+function renderElo(){
+  const sorted=PLAYERS.map(p=>({name:p,elo:ELO_RATINGS[p],diff:ELO_RATINGS[p]-1000,matches:M.filter(m=>pIn(m,p)).length})).sort((a,b)=>b.elo-a.elo);
+  const tourWins=getTourWinsMap();
+  const maxElo=Math.max(...sorted.map(s=>s.elo));
+  const minElo=Math.min(...sorted.map(s=>s.elo));
+  const display=eloShowAll?sorted:sorted.slice(0,10);
+
+  const top=sorted.slice(0,3);
+  const podiumOrder=top.length>=3?[top[1],top[0],top[2]]:top;
+  const podiumMeta=[{height:140,medal:'🥈'},{height:170,medal:'🥇'},{height:110,medal:'🥉'}];
+  const podiumHtml=`<div class="podium">${podiumOrder.map((s,vi)=>{const pm=podiumMeta[vi];return`<div class="podium-col"><div class="podium-bar" style="height:${pm.height}px"><div class="podium-rank">${pm.medal}</div><div class="podium-name" onclick="openPlayer('${s.name}')" style="cursor:pointer">${s.name}</div><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;margin-top:4px;color:var(--white)">${s.elo}</div><div class="podium-stat">${s.diff>0?'+':''}${s.diff}</div></div></div>`;}).join('')}</div>`;
+
+  const tableHtml=`<table class="lb-table"><thead><tr><th>#</th><th>Pelaaja</th><th class="r">Rating</th><th class="r">+/-</th><th>Taso</th><th class="r">Ottelut</th></tr></thead><tbody>${display.map((s,i)=>{const barW=maxElo>minElo?((s.elo-minElo)/(maxElo-minElo)*100).toFixed(1):50;const diffStr=(s.diff>0?'+':'')+s.diff;const diffCol=s.diff>0?'var(--green-bright)':s.diff<0?'var(--red)':'var(--ink3)';const tw=tourWins[s.name]||0;return`<tr onclick="openPlayer('${s.name}')"><td class="lb-rank">${i+1}</td><td class="lb-name">${s.name}${tw?' 🏆'.repeat(tw):''}</td><td class="r" style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700">${s.elo}</td><td class="r" style="color:${diffCol};font-weight:600">${diffStr}</td><td class="lb-bar-cell"><div class="lb-bar-wrap"><div style="height:100%;width:${barW}%;background:${s.diff>=0?'var(--green)':'var(--red)'};border-radius:4px"></div></div></td><td class="r">${s.matches}</td></tr>`;}).join('')}</tbody></table>${sorted.length>10?`<div style="text-align:center;margin-top:20px"><button onclick="eloShowAll=!eloShowAll;renderElo()" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:10px 20px;border:1px solid var(--border);background:var(--card);color:var(--ink);border-radius:6px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--border2)';this.style.background='var(--card2)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">${eloShowAll?'Piilota':'Näytä kaikki'} (${sorted.length})</button></div>`:''}`;
+
+
+  const eloExplainer=`<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin-bottom:28px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Lähtöpisteet</div>
+      <div style="font-size:14px;color:var(--ink)">Jokainen pelaaja aloittaa <b>1000 pisteestä</b>. Pisteitä voittaa voittamalla ja menettää häviämällä.</div>
+    </div>
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Tiimin vahvuus</div>
+      <div style="font-size:14px;color:var(--ink)">Parin vahvuus lasketaan molempien pelaajien Rating-arvojen <b>keskiarvona</b>. Vahvaa paria vastaan voittaminen antaa enemmän pisteitä.</div>
+    </div>
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Marginaalin vaikutus</div>
+      <div style="font-size:14px;color:var(--ink)">Pistemäärä <b>vaikuttaa muutoksen suuruuteen</b> — suuri voittomarginaali (esim. 30–2) antaa enemmän pisteitä kuin niukka voitto (17–15).</div>
+    </div>
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Otteluiden järjestys</div>
+      <div style="font-size:14px;color:var(--ink)">Ottelut käydään läpi <b>kronologisessa järjestyksessä</b> (Tour 1 → 5), joten aiemmat tulokset vaikuttavat myöhempien otteluiden pisteytykseen.</div>
+    </div>
+  </div>`;
+  document.getElementById('eloContent').innerHTML=`${eloExplainer}${podiumHtml}${tableHtml}`;
+}
+
 // INIT
 function init(){
-  renderHero();renderRanking();renderAwards();buildH2HChips();renderKehitys();renderTournaments();
+  renderHero();renderRanking();renderElo();renderAwards();buildH2HChips();renderKehitys();renderTournaments();
 }
 </script>
 </body>

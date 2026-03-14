@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Peikot Padel Tour</title>
+<meta name="description" content="Peikot Padel Tour 2026 – Vuoreksen Peikot ry:n padel-turnaussarjan tilastot, ranking ja tulokset.">
+<meta property="og:title" content="Peikot Padel Tour 2026">
+<meta property="og:description" content="Padel-turnaussarjan tilastot, PPT-rating, ennätykset ja head-to-head-vertailut.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0d2118">
+<title>Peikot Padel Tour 2026</title>
 <link href="fonts.css" rel="stylesheet">
 <style>
 :root {
@@ -31,7 +36,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--ink);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
-body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.15}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:99;opacity:.15}
 
 /* HERO */
 .hero{position:relative;padding:40px 40px 32px;overflow:hidden;display:flex;align-items:center;gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
@@ -61,11 +66,17 @@ section{padding:44px 40px;max-width:1200px;margin:0 auto}
 .p-chip:hover{border-color:var(--border2);background:var(--card2)}
 .p-chip.active{background:var(--green);border-color:var(--green);color:var(--bg)}
 .p-chip.sel1{background:var(--accent);border-color:var(--accent);color:var(--bg)}
-.p-chip.sel2{background:var(--blue);border-color:var(--blue);color:var(--white)}
+.p-chip.sel2{background:var(--blue);border-color:var(--blue);color:#fff}
 
 /* PODIUM */
 .podium{display:flex;justify-content:center;align-items:flex-end;gap:12px;margin-bottom:40px;flex-wrap:wrap}
 .podium-col{text-align:center}
+.podium-top{display:flex;flex-direction:column;align-items:center;margin-bottom:-6px;position:relative;z-index:2;transform:translateY(var(--podium-lift,0))}
+.podium-trophy{width:var(--podium-size,78px);height:var(--podium-size,78px);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:var(--podium-icon-size,38px);border:1px solid rgba(255,255,255,0.45);background:linear-gradient(160deg,var(--podium-soft),rgba(255,255,255,0.9));box-shadow:0 10px 22px var(--podium-glow),inset 0 1px 0 rgba(255,255,255,0.8)}
+.podium-col.first .podium-trophy{border-width:2px;box-shadow:0 16px 30px rgba(140,98,0,0.24),0 0 0 8px rgba(140,98,0,0.08),inset 0 1px 0 rgba(255,255,255,0.85)}
+.podium-col.first .podium-place{transform:scale(1.06)}
+.podium-place{margin-top:-10px;padding:4px 12px;border-radius:999px;background:var(--podium-color);color:#fff;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;box-shadow:0 6px 14px rgba(0,0,0,0.12)}
+.podium-note{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--podium-color);margin-bottom:8px}
 .podium-bar{width:140px;background:var(--card);border:1px solid var(--border);border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:20px 12px 16px;position:relative}
 .podium-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .podium-col:nth-child(1) .podium-bar::before{background:var(--silver)}
@@ -177,18 +188,7 @@ footer{text-align:center;padding:40px;border-top:1px solid var(--border);font-fa
 footer a{color:#006633;text-decoration:underline}
 footer a:hover{text-decoration:underline}
 
-@media(max-width:700px){
-  .hero,.nav,section,footer{padding-left:16px;padding-right:16px}
-  .podium-bar{width:100px;padding:14px 8px 12px}
-  .podium-rank{font-size:28px}
-  .podium-name{font-size:14px}
-  .match-row{grid-template-columns:1fr;gap:4px}
-  .match-team.right{text-align:left}
-  .h2h-box{grid-template-columns:1fr;text-align:center}
-  .lb-bar-cell{display:none}
-  .detail-panel{padding:24px 20px}
-  .detail-name{font-size:28px}
-}
+
 /* KEHITYS */
 .kehitys-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin-bottom:28px}
 .kehitys-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;cursor:pointer;transition:all .15s}
@@ -210,9 +210,46 @@ footer a:hover{text-decoration:underline}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 .fade-up{animation:fadeUp .4s ease both}
+
+/* HORIZONTAL SCROLL */
+.h-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch}
+.h-scroll::-webkit-scrollbar{height:4px}
+.h-scroll::-webkit-scrollbar-track{background:var(--bg)}
+.h-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.h-scroll-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
+
+/* SKIP LINK */
+.skip-link{position:absolute;top:-100px;left:16px;background:var(--green);color:white;padding:8px 16px;border-radius:0 0 6px 6px;font-size:13px;font-weight:700;z-index:9999;text-decoration:none;transition:top .2s}
+.skip-link:focus{top:0}
+
+/* SCROLL-TO-TOP */
+.scroll-top{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--green);color:white;border:none;font-size:20px;cursor:pointer;opacity:0;visibility:hidden;transition:all .25s;z-index:150;box-shadow:0 4px 14px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center}
+.scroll-top.visible{opacity:1;visibility:visible}
+.scroll-top:hover{background:var(--green-bright);transform:translateY(-2px)}
+
+/* MOBILE */
+@media(max-width:700px){
+  .hero,.nav,section,footer{padding-left:16px;padding-right:16px}
+  .podium-bar{width:100px;padding:14px 8px 12px}
+  .podium-rank{font-size:28px}
+  .podium-name{font-size:14px}
+  .lb-bar-cell{display:none}
+  .detail-panel{padding:24px 20px}
+  .detail-name{font-size:28px}
+  .match-row{grid-template-columns:1fr auto 1fr !important;gap:6px !important;padding:12px !important}
+  .match-row .match-meta{grid-column:1/-1;text-align:center;border-bottom:1px solid rgba(0,80,30,0.1);padding-bottom:6px;margin-bottom:2px}
+  .match-row .match-badge{grid-column:1/-1;text-align:center}
+  .match-team.right{text-align:right !important}
+  .h2h-box{grid-template-columns:1fr auto 1fr !important;gap:12px}
+  .h2h-name{font-size:18px}
+  .h2h-wins{font-size:32px}
+  .kehitys-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
+
+<a href="#ranking" class="skip-link">Siirry sisältöön</a>
 
 <div class="hero">
   <div class="hero-logo"><img src="logo.png" alt="Peikot" onerror="this.parentElement.innerHTML='🏓'"></div>
@@ -223,33 +260,27 @@ footer a:hover{text-decoration:underline}
   </div>
 </div>
 
-<div class="nav" id="mainNav">
-  <a href="#ranking" class="active" data-sec="ranking">Ranking</a>
-  <a href="#palkinnot" data-sec="palkinnot">Palkinnot</a>
-  <a href="#h2h" data-sec="h2h">Head-to-Head</a>
+<nav class="nav" role="navigation" aria-label="Päänavigaatio">
+  <a href="#ranking" data-sec="ranking">Ranking</a>
+  <a href="#palkinnot" data-sec="palkinnot">Ennätykset</a>
   <a href="#kehitys" data-sec="kehitys">Kehitys</a>
-  <a href="#turnaukset" data-sec="turnaukset">Turnaukset</a>
-</div>
+  <a href="#h2h" data-sec="h2h">Paritilasto</a>
+  <a href="#turnaukset" data-sec="turnaukset">Historia</a>
+</nav>
 
 <section id="ranking">
-  <div class="sec-label">Kaikkien aikojen</div>
-  <div class="sec-title">Ranking</div>
-  
-  <div style="margin-bottom:40px">
-    <div style="font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:12px;text-transform:uppercase;letter-spacing:2px">🏆 Turnausvoittajat</div>
-    <div class="tour-grid" id="tourWinners"></div>
-  </div>
-  
+  <div id="recentActivity" style="margin-bottom:40px"></div>
+
   <div>
-    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px"></div>
-    <div style="font-size:22px;font-weight:800;letter-spacing:-1px;margin-bottom:20px;color:var(--white)">PPT Rating <span style="font-size:0.55em;font-weight:600;color:var(--ink3);letter-spacing:-0.5px">(Peikot Padel Tour Rating)</span></div>
+    <div class="sec-label">PPT-rating, Peikot Padel Tour Rating</div>
+    <div class="sec-title">Parhaat pelaajat</div>
     <div id="eloContent"></div>
   </div>
 </section>
 
 <section id="palkinnot">
   <div class="sec-label">Kauden 2026</div>
-  <div class="sec-title">Palkinnot & Ennätykset</div>
+  <div class="sec-title">Ennätykset</div>
   <div class="awards" id="awards"></div>
 </section>
 
@@ -260,8 +291,8 @@ footer a:hover{text-decoration:underline}
 </section>
 
 <section id="h2h">
-  <div class="sec-label">Vertailu</div>
-  <div class="sec-title">Head-to-Head</div>
+  <div class="sec-label">Pelaajien keskinäiset ottelut</div>
+  <div class="sec-title">Paritilasto</div>
   <div class="player-chips" id="h2hChips"></div>
   <div id="h2hContent"><div class="empty-state"><div class="big">⚔️</div>Valitse kaksi pelaajaa vertaillaksesi</div></div>
 </section>
@@ -278,9 +309,11 @@ footer a:hover{text-decoration:underline}
   <div class="detail-panel" id="detailPanel"></div>
 </div>
 
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Takaisin ylös">↑</button>
+
 <footer>
   <div style="margin-bottom:6px">&#127934; Peikot Padel Tour &mdash; Kausi 2026</div>
-  <div><a href="https://vuoreksenpeikot.yhdistysavain.fi" target="_blank">Vuoreksen Peikot ry</a></div>
+  <div><a href="https://vuoreksenpeikot.yhdistysavain.fi" target="_blank" rel="noopener noreferrer">Vuoreksen Peikot ry</a></div>
 </footer>
 
 <script src="data/data.js?v=2"></script>
@@ -299,21 +332,34 @@ function getTourWinsMap(){const map={};TOURS.forEach((_,ti)=>{const w=getTourWin
 // HERO
 function renderHero(){document.getElementById('heroStats').innerHTML=`<span><b>${TOURS.length}</b> turnausta</span><span><b>${M.length}</b> ottelua</span><span><b>${PLAYERS.length}</b> pelaajaa</span>`}
 
-// RANKING
-function renderRanking(){
-  document.getElementById('tourWinners').innerHTML=TOURS.map((tour,ti)=>{const w=getTourWinner(ti);const tM=M.filter(m=>m.t===ti);const n=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))].length;const tourPts=tM.filter(m=>pIn(m,w)).reduce((a,m)=>a+myS(m,w),0);const concPts=tM.filter(m=>pIn(m,w)).reduce((a,m)=>a+opS(m,w),0);const diff=tourPts-concPts;const wm=tM.filter(m=>pIn(m,w));const wins=wm.filter(m=>res(m,w)==='W').length;const losses=wm.filter(m=>res(m,w)==='L').length;const ties=wm.filter(m=>res(m,w)==='T').length;const avg=(tourPts/wm.length).toFixed(1);return`<div class="tour-card" onclick="showTourDetail(${ti})"><div class="tour-num">${tour.id}</div><div class="tour-name">${tour.name}</div><div class="tour-date">${tour.date} · ${n} pelaajaa</div><div class="tour-winner" style="display:flex;flex-direction:column;gap:4px"><div style="font-size:20px;font-weight:800">🏆 ${w}</div><div style="font-size:12px;display:flex;gap:12px;align-items:center"><span style="color:${diff>0?'var(--green-bright)':diff<0?'var(--red)':'var(--ink3)'}">${diff>0?'+':''}${diff} p</span><span style="color:var(--ink2)">${avg} ka</span><div style="font-size:11px;color:var(--ink2);display:flex;gap:8px"><span style="color:var(--green-bright)">${wins}V</span><span style="color:var(--red)">${losses}H</span><span style="color:var(--ink3)">${ties}T</span></div></div></div></div>`}).join('');
+// RECENT ACTIVITY
+function renderRecentActivity(){
+  const tourCards=[...TOURS].reverse().map((tour,i)=>{
+    const ti=TOURS.length-1-i;const w=getTourWinner(ti);const tM=M.filter(m=>m.t===ti);
+    const n=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))].length;
+    const wm=tM.filter(m=>pIn(m,w));const wins=wm.filter(m=>res(m,w)==='W').length;const losses=wm.filter(m=>res(m,w)==='L').length;
+    const wPts=wm.reduce((a,m)=>a+myS(m,w),0);
+    const isLatest=i===0;
+    return`<div onclick="showTourDetail(${ti})" style="flex-shrink:0;width:280px;background:var(--card);border:${isLatest?'2px solid var(--border2)':'1px solid var(--border)'};border-radius:10px;padding:22px 24px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;box-shadow:${isLatest?'0 4px 16px rgba(0,80,30,0.13)':'0 1px 4px rgba(0,0,0,0.06)'}" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,80,30,0.15)'" onmouseout="this.style.transform='';this.style.boxShadow='${isLatest?'0 4px 16px rgba(0,80,30,0.13)':'0 1px 4px rgba(0,0,0,0.06)'}'">
+      ${isLatest?`<div style="position:absolute;top:14px;right:14px;background:var(--green);color:white;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:3px 8px;border-radius:4px">UUSIN</div>`:''}
+      <div style="display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.5px;color:${isLatest?'var(--green-bright)':'var(--ink2)'};background:${isLatest?'rgba(15,112,40,0.12)':'rgba(78,138,100,0.10)'};border:1px solid ${isLatest?'rgba(15,112,40,0.22)':'rgba(78,138,100,0.18)'};border-radius:999px;padding:6px 10px;margin-bottom:10px">${tour.date}</div>
+      <div style="font-size:20px;font-weight:800;color:var(--white);margin-bottom:16px;line-height:1.1;padding-right:${isLatest?'52px':'0'}">${tour.name}</div>
+      <div style="background:${isLatest?'rgba(15,112,40,0.07)':'var(--bg)'};border-radius:8px;padding:12px 14px;margin-bottom:0">
+        <div style="font-size:11px;color:var(--ink2);margin-bottom:4px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px">Turnausvoittaja</div>
+        <div style="font-size:18px;font-weight:800;color:var(--green-bright)">🏆 ${w}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2);margin-top:4px">${wins}V ${losses}H · ${wPts} p · ${n} pelaajaa</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('recentActivity').innerHTML=`<div class="sec-label" style="margin-bottom:12px">Viimeisimmät pelit</div><div class="h-scroll">${tourCards}</div>`;
 }
 
 // AWARDS
 function renderAwards(){
   const stats=PLAYERS.map(playerStats);const tourWins=getTourWinsMap();
-  let bigWin={diff:0};M.forEach(m=>{const d=Math.abs(m.sa-m.sb);if(d>bigWin.diff){bigWin={diff:d,winners:m.sa>m.sb?m.a:m.b,losers:m.sa>m.sb?m.b:m.a,ws:Math.max(m.sa,m.sb),ls:Math.min(m.sa,m.sb),tour:m.t}}});
   let mostPts={s:0};M.forEach(m=>{if(m.sa>mostPts.s)mostPts={s:m.sa,team:m.a,tour:m.t};if(m.sb>mostPts.s)mostPts={s:m.sb,team:m.b,tour:m.t}});
-  let tightest={diff:99};M.forEach(m=>{const d=Math.abs(m.sa-m.sb);if(d>0&&d<tightest.diff)tightest={diff:d,a:m.a,b:m.b,sa:m.sa,sb:m.sb,tour:m.t}});
-  const mostMatches=[...stats].sort((a,b)=>b.matches-a.matches)[0];
   function getStreak(p){const ms=M.filter(m=>pIn(m,p));let max=0,cur=0;ms.forEach(m=>{if(res(m,p)==='W'){cur++;if(cur>max)max=cur}else cur=0});return max}
   let bestStreak={name:'',streak:0};PLAYERS.forEach(p=>{const s=getStreak(p);if(s>bestStreak.streak)bestStreak={name:p,streak:s}});
-  const mostTies=[...stats].sort((a,b)=>b.t-a.t)[0];
   const mostTW=Object.entries(tourWins).sort((a,b)=>b[1]-a[1])[0];
   // Best win%
   const bestWinPct=[...stats].sort((a,b)=>b.winPct-a.winPct||b.w-a.w)[0];
@@ -329,32 +375,27 @@ function renderAwards(){
   // Tasaisin riivaliteetti (pari jotka kohtaavat vastakkain tasaisesti)
   const rivalries={};M.forEach(m=>{const pair=[...new Set([m.a[0],m.a[1],m.b[0],m.b[1]])];for(let i=0;i<pair.length;i++){for(let j=i+1;j<pair.length;j++){const a=pair[i],b=pair[j];if((m.a.includes(a)&&m.b.includes(b))||(m.b.includes(a)&&m.a.includes(b))){const k=[a,b].sort().join('|');if(!rivalries[k])rivalries[k]={a,b,aWins:0,bWins:0};if((m.a.includes(a)&&m.b.includes(b)&&m.sa>m.sb)||(m.b.includes(a)&&m.a.includes(b)&&m.sb>m.sa))rivalries[k].aWins++;else if((m.a.includes(a)&&m.b.includes(b)&&m.sa<m.sb)||(m.b.includes(a)&&m.a.includes(b)&&m.sb<m.sa))rivalries[k].bWins++}}}});
   const balancedRivalries=Object.values(rivalries).filter(r=>r.aWins+r.bWins>=2).map(r=>({...r,diff:Math.abs(r.aWins-r.bWins),total:r.aWins+r.bWins})).sort((a,b)=>a.diff-b.diff||b.total-a.total)[0];
-  // Parit joilla yleinen pallo (voittavat eniten eri pareja vastaan)
-  const pairVictories={};M.forEach(m=>{const ka=[...m.a].sort().join('|');const kb=[...m.b].sort().join('|');if(m.sa>m.sb){if(!pairVictories[ka])pairVictories[ka]={p:[...m.a],against:new Set()};pairVictories[ka].against.add(kb);if(!pairVictories[kb])pairVictories[kb]={p:[...m.b],against:new Set()};}else if(m.sb>m.sa){if(!pairVictories[kb])pairVictories[kb]={p:[...m.b],against:new Set()};pairVictories[kb].against.add(ka);if(!pairVictories[ka])pairVictories[ka]={p:[...m.a],against:new Set()};}});
-  const bestDiversePair=Object.values(pairVictories).sort((a,b)=>b.against.size-a.against.size)[0];
+
   // Liima-pelaajat (parantavat toisiaan eniten)
   const chemistryMap={};PLAYERS.forEach(p1=>{PLAYERS.forEach(p2=>{if(p1<p2){const together=M.filter(m=>(m.a.includes(p1)&&m.a.includes(p2))||(m.b.includes(p1)&&m.b.includes(p2)));if(together.length>=2){const p1Solo=M.filter(m=>pIn(m,p1)&&!together.includes(m));const p2Solo=M.filter(m=>pIn(m,p2)&&!together.includes(m));const togetherWinPct=together.filter(m=>res(m,p1)==='W').length/together.length;const p1SoloWinPct=p1Solo.length?p1Solo.filter(m=>res(m,p1)==='W').length/p1Solo.length:0;const p2SoloWinPct=p2Solo.length?p2Solo.filter(m=>res(m,p2)==='W').length/p2Solo.length:0;const avgSolo=(p1SoloWinPct+p2SoloWinPct)/2;const boost=togetherWinPct-avgSolo;const k=[p1,p2].sort().join('|');chemistryMap[k]={p1,p2,togetherWinPct,avgSolo,boost,games:together.length}}}});});
-  const bestChemistry=Object.values(chemistryMap).sort((a,b)=>b.boost-a.boost)[0];  // Best boost partner — kelle pelaajalle jokin partneri antaa suurimman nousun
-  const playerBoosts={};PLAYERS.forEach(p=>{const pSoloWinPct=playerStats(p).winPct;const bestPartner=Object.values(chemistryMap).filter(c=>c.p1===p||c.p2===p).map(c=>{const partner=c.p1===p?c.p2:c.p1;const pWithPartnerWinPct=(c.p1===p?c.togetherWinPct:c.togetherWinPct);const boost=pWithPartnerWinPct-pSoloWinPct;return{partner,boost,winPct:pWithPartnerWinPct}}).sort((a,b)=>b.boost-a.boost)[0];if(bestPartner)playerBoosts[p]={...bestPartner,solo:pSoloWinPct}});
-  const bestBoostPartner=Object.entries(playerBoosts).sort((a,b)=>b[1].boost-a[1].boost)[0];
+  const bestChemistry=Object.values(chemistryMap).sort((a,b)=>b.boost-a.boost)[0];
   // Mr. Swing — pelaaja jolla suurin heilunta turnauksesta toiseen
   const swings={};PLAYERS.forEach(p=>{const tourData=TOURS.map((t,ti)=>{const tM=M.filter(m=>m.t===ti&&pIn(m,p));return{tour:ti,avg:tM.length?tM.reduce((a,m)=>a+myS(m,p),0)/tM.length:0}}).filter(t=>t.avg>0);if(tourData.length>=2){const avgs=tourData.map(t=>t.avg);const maxAvg=Math.max(...avgs);const minAvg=Math.min(...avgs);swings[p]={max:maxAvg,min:minAvg,swing:maxAvg-minAvg}}});
   const mrSwing=Object.entries(swings).sort((a,b)=>b[1].swing-a[1].swing)[0];
-  const mrSteady=Object.entries(swings).sort((a,b)=>a[1].swing-b[1].swing)[0];  const awards=[
-    {icon:'🏆',title:'Eniten turnausvoittoja',value:mostTW[0],desc:`${mostTW[1]} turnausvoittoa`},
-    {icon:'🥇',title:'Paras voittoprosentti',value:`${bestWinPct.name}`,desc:`${Math.round(bestWinPct.winPct*100)}% · ${bestWinPct.w} voittoa / ${bestWinPct.matches} ottelua`},
-    {icon:'🔥',title:'Pisin voittoputki',value:bestStreak.name,desc:`${bestStreak.streak} voittoa putkeen`},
-    {icon:'💎',title:'Eniten pisteitä',value:mostPtsTotal.name,desc:`${mostPtsTotal.pts} pistettä yhteensä`},
-    {icon:'👊',title:'Paras parivaljakko',value:`${bestPair.n.join(' & ')}`,desc:`${bestPair.w}V ${bestPair.l}H ${bestPair.t}T · ${Math.round(bestPair.pct*100)}% voitto%`},
-    {icon:'⚔️',title:'Tasaisimmat vastustajat',value:`${balancedRivalries.a} vs ${balancedRivalries.b}`,desc:`${balancedRivalries.aWins}–${balancedRivalries.bWins} kohtaamisissa (${balancedRivalries.total} peliä)`},
-    {icon:'🔄',title:'Paras kemia',value:`${bestChemistry.p1} & ${bestChemistry.p2}`,desc:`Yhdessä ${Math.round(bestChemistry.togetherWinPct*100)}% (erillään ${Math.round(bestChemistry.avgSolo*100)}%) · +${Math.round(bestChemistry.boost*100)}%`},
-    {icon:'⚡',title:'Eniten pisteitä ottelussa',value:`${mostPts.team.join(' & ')}`,desc:`${mostPts.s} pistettä · ${TOURS[mostPts.tour].name}`},
-    {icon:'🧊',title:'Mr. Viimeistelijä',value:closeKing[0],desc:`${closeKing[1]} niukkaa voittoa (marginaali ≤4)`},
-    {icon:'⚖️',title:'Mr. Tasainen',value:`${avgDiffs.name}`,desc:`${avgDiffs.avg.toFixed(1)} p/ottelu — lähimpänä täydellistä 16.0 keskiarvoa`},
-    {icon:'📊',title:'Mr. Steady',value:`${mrSteady[0]}`,desc:`${mrSteady[1].min.toFixed(1)}–${mrSteady[1].max.toFixed(1)} p/ottelu · ${mrSteady[1].swing.toFixed(1)}p vaihtelu turnauksittain`},
-
-    {icon:'🎢',title:'Mr. Swing',value:`${mrSwing[0]}`,desc:`${mrSwing[1].min.toFixed(1)}–${mrSwing[1].max.toFixed(1)} p/ottelu · ${mrSwing[1].swing.toFixed(1)}p heilunta`},
-  ];
+  const mrSteady=Object.entries(swings).sort((a,b)=>a[1].swing-b[1].swing)[0];
+  const awards=[];
+  if(mostTW) awards.push({icon:'🏆',title:'Eniten turnausvoittoja',value:mostTW[0],desc:`${mostTW[1]} turnausvoittoa`});
+  if(bestWinPct) awards.push({icon:'🥇',title:'Paras voittoprosentti',value:bestWinPct.name,desc:`${Math.round(bestWinPct.winPct*100)}% · ${bestWinPct.w} voittoa / ${bestWinPct.matches} ottelua`});
+  if(bestStreak.name) awards.push({icon:'🔥',title:'Pisin voittoputki',value:bestStreak.name,desc:`${bestStreak.streak} voittoa putkeen`});
+  if(mostPtsTotal) awards.push({icon:'💎',title:'Eniten pisteitä',value:mostPtsTotal.name,desc:`${mostPtsTotal.pts} pistettä yhteensä`});
+  if(bestPair) awards.push({icon:'👊',title:'Paras parivaljakko',value:bestPair.n.join(' & '),desc:`${bestPair.w}V ${bestPair.l}H ${bestPair.t}T · ${Math.round(bestPair.pct*100)}% voitto%`});
+  if(balancedRivalries) awards.push({icon:'⚔️',title:'Tasaisimmat vastustajat',value:`${balancedRivalries.a} vs ${balancedRivalries.b}`,desc:`${balancedRivalries.aWins}–${balancedRivalries.bWins} kohtaamisissa (${balancedRivalries.total} peliä)`});
+  if(bestChemistry) awards.push({icon:'🔄',title:'Paras kemia',value:`${bestChemistry.p1} & ${bestChemistry.p2}`,desc:`Yhdessä ${Math.round(bestChemistry.togetherWinPct*100)}% (erillään ${Math.round(bestChemistry.avgSolo*100)}%) · +${Math.round(bestChemistry.boost*100)}%`});
+  if(mostPts.s>0) awards.push({icon:'⚡',title:'Eniten pisteitä ottelussa',value:mostPts.team.join(' & '),desc:`${mostPts.s} pistettä · ${TOURS[mostPts.tour].name}`});
+  if(closeKing) awards.push({icon:'🧊',title:'Mr. Viimeistelijä',value:closeKing[0],desc:`${closeKing[1]} niukkaa voittoa (marginaali ≤4)`});
+  if(avgDiffs) awards.push({icon:'⚖️',title:'Mr. Tasainen',value:avgDiffs.name,desc:`${avgDiffs.avg.toFixed(1)} p/ottelu — lähimpänä täydellistä 16.0 keskiarvoa`});
+  if(mrSteady) awards.push({icon:'📊',title:'Mr. Steady',value:mrSteady[0],desc:`${mrSteady[1].min.toFixed(1)}–${mrSteady[1].max.toFixed(1)} p/ottelu · ${mrSteady[1].swing.toFixed(1)}p vaihtelu turnauksittain`});
+  if(mrSwing) awards.push({icon:'🎢',title:'Mr. Swing',value:mrSwing[0],desc:`${mrSwing[1].min.toFixed(1)}–${mrSwing[1].max.toFixed(1)} p/ottelu · ${mrSwing[1].swing.toFixed(1)}p heilunta`});
   document.getElementById('awards').innerHTML=awards.map(a=>`<div class="award-card"><div class="award-icon">${a.icon}</div><div class="award-title">${a.title}</div><div class="award-value">${a.value}</div><div class="award-desc">${a.desc}</div></div>`).join('');
 }
 
@@ -455,17 +496,15 @@ function renderKehitys(){
     return{name:p,tourIds,perTour,winPctDiff,avgDiff,trend,firstWinPct:first.winPct,lastWinPct:last.winPct,firstRank:first.rank,lastRank:last.rank};
   }).filter(x=>x&&x.tourIds.length>=3).sort((a,b)=>b.trend-a.trend||b.avgDiff-a.avgDiff);
 
-  const top3=pData.slice(0,3);
   const medals=['🥇','🥈','🥉'];
 
   let html='<div class="kehitys-grid">';
-  top3.forEach((pd,idx)=>{
+  pData.slice(0,3).forEach((pd,idx)=>{
     const firstPts=pd.perTour[0].pts,lastPts=pd.perTour[pd.perTour.length-1].pts;
     const ptsChange=lastPts-firstPts;
     const dir=ptsChange>2?'up':ptsChange<-2?'down':'flat';
     const diffLabel=(ptsChange>0?'+':'')+ptsChange+' p';
     const maxPts=Math.max(...pd.perTour.map(t=>t.pts));
-
     html+=`<div class="kehitys-card" onclick="openPlayer('${pd.name}')">
       <div class="kehitys-header">
         <div class="kehitys-name">${medals[idx]} ${pd.name}</div>
@@ -511,28 +550,35 @@ function renderElo(){
 
   const top=sorted.slice(0,3);
   const podiumOrder=top.length>=3?[top[1],top[0],top[2]]:top;
-  const podiumMeta=[{height:150,medal:'🥈'},{height:180,medal:'🥇'},{height:130,medal:'🥉'}];
-  const podiumHtml=`<div class="podium">${podiumOrder.map((s,vi)=>{const pm=podiumMeta[vi];return`<div class="podium-col"><div class="podium-bar" style="height:${pm.height}px"><div class="podium-rank">${pm.medal}</div><div class="podium-name" onclick="openPlayer('${s.name}')" style="cursor:pointer">${s.name}</div><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;margin-top:4px;color:var(--white)">${s.elo}</div><div class="podium-stat">${s.diff>0?'+':''}${s.diff}</div></div></div>`;}).join('')}</div>`;
+  const podiumMeta=[
+    {height:150,color:'var(--silver)',soft:'rgba(74,80,88,0.16)',glow:'rgba(74,80,88,0.18)',place:'2.',label:'Hopea',className:'second',size:'74px',iconSize:'34px',lift:'0px'},
+    {height:180,color:'var(--gold)',soft:'rgba(140,98,0,0.18)',glow:'rgba(140,98,0,0.20)',place:'1.',label:'Kulta',className:'first',size:'92px',iconSize:'46px',lift:'-10px'},
+    {height:130,color:'var(--bronze)',soft:'rgba(122,72,32,0.16)',glow:'rgba(122,72,32,0.18)',place:'3.',label:'Pronssi',className:'third',size:'70px',iconSize:'32px',lift:'2px'}
+  ];
+  const podiumHtml=`<div class="podium">${podiumOrder.map((s,vi)=>{const pm=podiumMeta[vi];return`<div class="podium-col ${pm.className}" style="--podium-color:${pm.color};--podium-soft:${pm.soft};--podium-glow:${pm.glow};--podium-size:${pm.size};--podium-icon-size:${pm.iconSize};--podium-lift:${pm.lift}"><div class="podium-top"><div class="podium-trophy">🏆</div><div class="podium-place">${pm.place}</div></div><div class="podium-bar" style="height:${pm.height}px"><div class="podium-note">${pm.label}</div><div class="podium-name" onclick="openPlayer('${s.name}')" style="cursor:pointer;color:var(--podium-color)">${s.name}</div><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;margin-top:4px;color:var(--white)">${s.elo}</div><div class="podium-stat">${s.diff>0?'+':''}${s.diff}</div></div></div>`;}).join('')}</div>`;
 
   const tableHtml=`<table class="lb-table"><thead><tr><th>#</th><th>Pelaaja</th><th class="r">Rating</th><th class="r">+/-</th><th class="lb-bar-cell">Taso</th></tr></thead><tbody>${display.map((s,i)=>{const barW=maxElo>minElo?((s.elo-minElo)/(maxElo-minElo)*100).toFixed(1):50;const diffStr=(s.diff>0?'+':'')+s.diff;const diffCol=s.diff>0?'var(--green-bright)':s.diff<0?'var(--red)':'var(--ink3)';return`<tr onclick="openPlayer('${s.name}')"><td class="lb-rank">${i+1}</td><td class="lb-name">${s.name}</td><td class="r" style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700">${s.elo}</td><td class="r" style="color:${diffCol};font-weight:600">${diffStr}</td><td class="lb-bar-cell"><div class="lb-bar-wrap"><div style="height:100%;width:${barW}%;background:${s.diff>=0?'var(--green)':'var(--red)'};border-radius:4px"></div></div></td></tr>`;}).join('')}</tbody></table>${sorted.length>10?`<div style="text-align:center;margin-top:20px"><button onclick="eloShowAll=!eloShowAll;renderElo()" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:10px 20px;border:1px solid var(--border);background:var(--card);color:var(--ink);border-radius:6px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--border2)';this.style.background='var(--card2)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">${eloShowAll?'Piilota':'Näytä kaikki'} (${sorted.length})</button></div>`:''}`;
 
 
-  const eloExplainer=`<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin-bottom:28px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
-    <div>
-      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Lähtöpisteet</div>
-      <div style="font-size:14px;color:var(--ink)">Jokainen pelaaja aloittaa <b>1000 pisteestä</b>. Pisteitä voittaa voittamalla ja menettää häviämällä.</div>
-    </div>
-    <div>
-      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Tiimin vahvuus</div>
-      <div style="font-size:14px;color:var(--ink)">Parin vahvuus lasketaan molempien pelaajien Rating-arvojen <b>keskiarvona</b>. Vahvaa paria vastaan voittaminen antaa enemmän pisteitä.</div>
-    </div>
-    <div>
-      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Marginaalin vaikutus</div>
-      <div style="font-size:14px;color:var(--ink)">Pistemäärä <b>vaikuttaa muutoksen suuruuteen</b> — suuri voittomarginaali (esim. 30–2) antaa enemmän pisteitä kuin niukka voitto (17–15).</div>
-    </div>
-    <div>
-      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Otteluiden järjestys</div>
-      <div style="font-size:14px;color:var(--ink)">Ottelut käydään läpi <b>kronologisessa järjestyksessä</b> (Tour 1 → 5), joten aiemmat tulokset vaikuttavat myöhempien otteluiden pisteytykseen.</div>
+  const eloExplainer=`<div style="margin-bottom:20px">
+    <button onclick="var b=document.getElementById('eloExplainerBox');var open=b.style.display!=='none';b.style.display=open?'none':'grid';this.textContent=open?'Miten pisteytys toimii? ▾':'Piilota selitys ▴'" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:8px 16px;border:1px solid var(--border);background:var(--card);color:var(--ink2);border-radius:6px;cursor:pointer;transition:all .15s;letter-spacing:.5px" onmouseover="this.style.borderColor='var(--border2)';this.style.background='var(--card2)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">Miten pisteytys toimii? ▾</button>
+    <div id="eloExplainerBox" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin-top:10px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Lähtöpisteet</div>
+        <div style="font-size:14px;color:var(--ink)">Jokainen pelaaja aloittaa <b>1000 pisteestä</b>. Pisteitä voittaa voittamalla ja menettää häviämällä.</div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Tiimin vahvuus</div>
+        <div style="font-size:14px;color:var(--ink)">Parin vahvuus lasketaan molempien pelaajien Rating-arvojen <b>keskiarvona</b>. Vahvaa paria vastaan voittaminen antaa enemmän pisteitä.</div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Marginaalin vaikutus</div>
+        <div style="font-size:14px;color:var(--ink)">Pistemäärä <b>vaikuttaa muutoksen suuruuteen</b> — suuri voittomarginaali (esim. 30–2) antaa enemmän pisteitä kuin niukka voitto (17–15).</div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Otteluiden järjestys</div>
+        <div style="font-size:14px;color:var(--ink)">Ottelut käydään läpi <b>kronologisessa järjestyksessä</b> (Tour 1 → 5), joten aiemmat tulokset vaikuttavat myöhempien otteluiden pisteytykseen.</div>
+      </div>
     </div>
   </div>`;
   document.getElementById('eloContent').innerHTML=`${eloExplainer}${podiumHtml}${tableHtml}`;
@@ -540,7 +586,10 @@ function renderElo(){
 
 // INIT
 function init(){
-  renderHero();renderRanking();renderElo();renderAwards();buildH2HChips();renderKehitys();renderTournaments();
+  renderHero();renderRecentActivity();renderElo();renderAwards();buildH2HChips();renderKehitys();renderTournaments();
+  // Scroll-to-top visibility
+  const scrollBtn=document.getElementById('scrollTop');
+  window.addEventListener('scroll',()=>{scrollBtn.classList.toggle('visible',window.scrollY>400)},{passive:true});
 }
 </script>
 </body>

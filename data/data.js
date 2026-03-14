@@ -3,6 +3,8 @@ let TOURS = [];
 let M = [];
 let PLAYERS = [];
 let ELO_RATINGS = {};
+let ELO_PREV_RATINGS = {};
+let ELO_HISTORY = {}; // {player: [{ti, elo}, ...]} — snapshot Elo-arvo jokaisen turnauksen jälkeen
 
 // Lataa turnausdata yhdestä JSON-tiedostosta
 async function loadData() {
@@ -61,7 +63,7 @@ if (document.readyState === 'loading') {
 function computeElo() {
   const ratings = {};
   const matchCount = {};
-  PLAYERS.forEach(p => { ratings[p] = 1000; matchCount[p] = 0; });
+  PLAYERS.forEach(p => { ratings[p] = 1000; matchCount[p] = 0; ELO_HISTORY[p] = []; });
 
   // K pienenee kokemuksen myötä: uusi pelaaja <10 ottelua → 40, 10–20 → 32, 20+ → 24
   const getK = n => n < 10 ? 40 : n < 20 ? 32 : 24;
@@ -75,7 +77,15 @@ function computeElo() {
     else last.matches.push(m);
   });
 
-  rounds.forEach(round => {
+  const maxT = rounds.length > 0 ? Math.max(...rounds.map(r => r.t)) : -1;
+  let prevSnapped = false;
+
+  rounds.forEach((round, ri) => {
+    // Ota snapshot ennen viimeistä turnausta
+    if (!prevSnapped && round.t === maxT) {
+      PLAYERS.forEach(p => { ELO_PREV_RATINGS[p] = Math.round(ratings[p]); });
+      prevSnapped = true;
+    }
     // Laske kaikki deltat ensin vanhoilla ratingeilla
     const deltas = {};
     round.matches.forEach(m => {
@@ -93,8 +103,14 @@ function computeElo() {
     // Päivitä kaikki ratingit ja ottelumäärät samanaikaisesti
     Object.entries(deltas).forEach(([p, d]) => { ratings[p] += d; });
     round.matches.forEach(m => { [...m.a, ...m.b].forEach(p => { matchCount[p]++; }); });
+    // Tallenna Elo-snapshot viimeisen erän jälkeen joka turnauksessa
+    const isLastRoundOfTour = (ri === rounds.length - 1) || rounds[ri + 1].t !== round.t;
+    if (isLastRoundOfTour) { PLAYERS.forEach(p => { ELO_HISTORY[p].push({ ti: round.t, elo: Math.round(ratings[p]) }); }); }
   });
 
+  if (!prevSnapped) {
+    PLAYERS.forEach(p => { ELO_PREV_RATINGS[p] = 1000; });
+  }
   PLAYERS.forEach(p => { ratings[p] = Math.round(ratings[p]); });
   ELO_RATINGS = ratings;
 }

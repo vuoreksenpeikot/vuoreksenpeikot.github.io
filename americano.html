@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peikot Padel – Americano</title>
+  <link rel="stylesheet" href="fonts.css">
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <style>
+    :root {
+      --bg: #0f1a0f;
+      --surface: #1a2a1a;
+      --surface2: #243324;
+      --border: #2e4a2e;
+      --green: #4caf50;
+      --green-light: #81c784;
+      --gold: #ffd700;
+      --silver: #c0c0c0;
+      --bronze: #cd7f32;
+      --red: #ef5350;
+      --text: #e8f5e9;
+      --muted: #7a9a7a;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+    .top-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .top-bar h1 { font-family: 'Syne', sans-serif; font-size: 1.1rem; color: var(--green-light); }
+    .top-bar a { color: var(--muted); font-size: 0.8rem; text-decoration: none; }
+    .top-bar a:hover { color: var(--green-light); }
+    .container { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+    h2 { font-family: 'Syne', sans-serif; font-size: 1.1rem; color: var(--green-light); margin-bottom: 12px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    label { display: block; color: var(--muted); font-size: 0.78rem; margin-bottom: 4px; margin-top: 12px; }
+    label:first-child { margin-top: 0; }
+    input, select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--green); }
+    input::placeholder { color: var(--muted); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--green); color: #000; }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-gold { background: var(--gold); color: #000; }
+    .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+    .player-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .player-slot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+    }
+    .player-slot .slot-num { color: var(--muted); min-width: 20px; font-size: 0.75rem; }
+    .player-slot input { background: transparent; border: none; padding: 2px 4px; font-size: 0.85rem; }
+    .player-slot input:focus { outline: 1px solid var(--green); border-radius: 4px; }
+    .share-banner {
+      background: var(--surface2);
+      border: 1px solid var(--green);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .share-url {
+      font-size: 0.78rem;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+    .tour-meta { color: var(--muted); font-size: 0.82rem; margin-bottom: 16px; }
+    .standings-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .standings-table th {
+      text-align: left;
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+    .standings-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    .standings-table tr:last-child td { border-bottom: none; }
+    .standings-table .rank { color: var(--muted); width: 28px; }
+    .standings-table .pts { font-weight: 700; text-align: right; }
+    .standings-table .wl { color: var(--muted); font-size: 0.78rem; text-align: right; }
+    .standings-table tr.gold td { color: var(--gold); }
+    .standings-table tr.silver td { color: var(--silver); }
+    .standings-table tr.bronze td { color: var(--bronze); }
+    .round-block { margin-bottom: 12px; }
+    .round-header {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px 8px 0 0;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--green-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .round-header.done { border-color: var(--green); }
+    .round-status { font-size: 0.75rem; color: var(--green); }
+    .match-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+    }
+    .match-card:last-child { border-radius: 0 0 8px 8px; }
+    .team-name { font-weight: 600; }
+    .court-label { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .score-inputs { display: flex; align-items: center; gap: 6px; justify-content: center; }
+    .score-inputs input {
+      width: 54px;
+      text-align: center;
+      padding: 7px 4px;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .score-inputs .dash { color: var(--muted); }
+    .token-row { display: flex; gap: 8px; align-items: flex-end; }
+    .token-row > :first-child { flex: 1; }
+    .gh-status { font-size: 0.78rem; margin-top: 8px; min-height: 20px; }
+    .gh-status.ok { color: var(--green-light); }
+    .gh-status.error { color: #ff8a80; }
+    .gh-status.info { color: #90caf9; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      color: var(--muted);
+      gap: 16px;
+      font-size: 0.9rem;
+    }
+    .spinner-ring {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 520px) {
+      .match-card { grid-template-columns: 1fr; gap: 8px; }
+      .score-inputs { justify-content: flex-start; }
+      .player-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>🏓 Peikot Padel – Americano</h1>
+  <a href="index.html">← Tilastot</a>
+</div>
+
+<!-- LOADING -->
+<div class="view" id="view-loading">
+  <div class="spinner">
+    <div class="spinner-ring"></div>
+    <span>Ladataan turnausta…</span>
+  </div>
+</div>
+
+<!-- CREATE -->
+<div class="view" id="view-create">
+  <div class="container">
+    <div class="card">
+      <h2>Uusi Americano-turnaus</h2>
+      <label for="tour-name">Nimi</label>
+      <input type="text" id="tour-name" placeholder="Tour 6">
+      <label for="tour-date">Päivämäärä</label>
+      <input type="date" id="tour-date">
+      <label for="player-count">Pelaajamäärä</label>
+      <select id="player-count" onchange="renderPlayerSlots()">
+        <option value="8">8 pelaajaa (7 kierrosta)</option>
+        <option value="12">12 pelaajaa (11 kierrosta)</option>
+      </select>
+      <label style="margin-top: 16px;">Pelaajat</label>
+      <div id="player-grid" class="player-grid"></div>
+      <div style="margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <button class="btn btn-primary" id="create-btn" onclick="createTournament()">Luo turnaus ja jaa linkki →</button>
+        <span id="create-status" style="font-size: 0.82rem; color: var(--muted);"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE -->
+<div class="view" id="view-live">
+  <div class="container">
+    <div class="share-banner">
+      <span class="share-url" id="share-url"></span>
+      <button class="btn btn-secondary btn-sm" id="copy-share-btn" onclick="copyShare()">📋 Kopioi linkki</button>
+    </div>
+    <div class="card">
+      <h2 id="tour-title">Pistetaulu</h2>
+      <div class="tour-meta" id="tour-meta"></div>
+      <table class="standings-table">
+        <thead><tr>
+          <th>#</th><th>Pelaaja</th>
+          <th class="pts">Pist.</th>
+          <th class="wl">V–H</th>
+        </tr></thead>
+        <tbody id="standings-body"></tbody>
+      </table>
+    </div>
+    <div id="rounds-container"></div>
+    <div class="card">
+      <h2>Tallenna GitHubiin</h2>
+      <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 12px;">
+        Tallentaa tulokset tilastosivulle. Tarvitset GitHub PAT:in, jolla on Contents-kirjoitusoikeus.
+      </p>
+      <div class="token-row">
+        <div>
+          <label for="gh-pat">GitHub PAT</label>
+          <input type="password" id="gh-pat" placeholder="github_pat_…" autocomplete="off" oninput="onPatInput()">
+        </div>
+        <button class="btn btn-gold btn-sm" id="save-gh-btn" onclick="saveToGitHub()">💾 Tallenna</button>
+      </div>
+      <div class="gh-status" id="gh-status"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NOT FOUND -->
+<div class="view" id="view-notfound">
+  <div class="container">
+    <div class="card" style="text-align: center; padding: 40px;">
+      <div style="font-size: 2rem; margin-bottom: 12px;">🔍</div>
+      <h2>Turnausta ei löydy</h2>
+      <p style="color: var(--muted); font-size: 0.9rem; margin: 12px 0 20px;">Tarkista linkki tai luo uusi turnaus.</p>
+      <a href="americano.html" class="btn btn-primary" style="text-decoration: none;">Luo uusi turnaus</a>
+    </div>
+  </div>
+</div>
+
+<datalist id="known-players-dl"></datalist>
+
+<script>
+// ============================================================
+// FIREBASE
+// ============================================================
+firebase.initializeApp({
+  apiKey: 'AIzaSyDDP68XyFvVHI7e3KZQcZQQxXU3o_FDxec',
+  databaseURL: 'https://peikotpadel-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId: 'peikotpadel',
+  appId: '1:451912427376:web:b555af100cd8d6188451b5'
+});
+const db = firebase.database();
+
+// ============================================================
+// STATE
+// ============================================================
+let tourId = null;
+let tourData = null;
+let scoresOff = null;
+const debounceTimers = {};
+
+// ============================================================
+// BOOT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  const t = new URLSearchParams(location.search).get('t');
+  if (t) {
+    loadTournament(t);
+  } else {
+    loadKnownPlayers();
+    initCreateForm();
+    showView('create');
+  }
+});
+
+// ============================================================
+// CREATE
+// ============================================================
+function initCreateForm() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  document.getElementById('tour-date').value =
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  renderPlayerSlots();
+  const pat = localStorage.getItem('gh_pat');
+  if (pat) {
+    const el = document.getElementById('gh-pat');
+    if (el) el.value = pat;
+  }
+}
+
+async function loadKnownPlayers() {
+  try {
+    const r = await fetch('data/all-matches.json?t=' + Date.now());
+    const d = await r.json();
+    const known = [...new Set(d.matches.flatMap(m => [...m.a, ...m.b]))].sort();
+    const dl = document.getElementById('known-players-dl');
+    dl.innerHTML = known.map(p => `<option value="${esc(p)}">`).join('');
+  } catch (e) {}
+}
+
+function renderPlayerSlots() {
+  const n = parseInt(document.getElementById('player-count').value);
+  const grid = document.getElementById('player-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= n; i++) {
+    const d = document.createElement('div');
+    d.className = 'player-slot';
+    d.innerHTML = `<span class="slot-num">${i}.</span><input type="text" list="known-players-dl" placeholder="Pelaaja ${i}" data-idx="${i - 1}">`;
+    grid.appendChild(d);
+  }
+}
+
+async function createTournament() {
+  const btn = document.getElementById('create-btn');
+  const statusEl = document.getElementById('create-status');
+  const name = document.getElementById('tour-name').value.trim() || 'Americano';
+  const date = document.getElementById('tour-date').value;
+  const n = parseInt(document.getElementById('player-count').value);
+  const players = [...document.querySelectorAll('#player-grid input')].map(i => i.value.trim()).filter(Boolean);
+
+  if (players.length !== n) {
+    statusEl.textContent = `Täytä kaikki ${n} pelaajan nimet.`;
+    statusEl.style.color = '#ff8a80';
+    return;
+  }
+  if (new Set(players.map(p => p.toLowerCase())).size !== n) {
+    statusEl.textContent = 'Pelaajien nimet täytyy olla uniikkeja.';
+    statusEl.style.color = '#ff8a80';
+    return;
+  }
+
+  btn.disabled = true;
+  statusEl.style.color = 'var(--muted)';
+  statusEl.textContent = 'Luodaan turnausta…';
+
+  try {
+    const schedule = buildSchedule(players);
+    const ref = db.ref('tournaments').push();
+    await ref.set({ meta: { name, date, players }, schedule });
+    location.href = '?t=' + ref.key;
+  } catch (e) {
+    statusEl.textContent = '✗ Virhe: ' + e.message;
+    statusEl.style.color = '#ff8a80';
+    btn.disabled = false;
+  }
+}
+
+// ============================================================
+// LIVE
+// ============================================================
+async function loadTournament(id) {
+  showView('loading');
+  try {
+    const snap = await db.ref('tournaments/' + id).once('value');
+    if (!snap.exists()) { showView('notfound'); return; }
+    tourId = id;
+    tourData = snap.val();
+    if (!tourData.scores) tourData.scores = {};
+    renderLive();
+    showView('live');
+    setupScoresListener(id);
+    const pat = localStorage.getItem('gh_pat');
+    if (pat) document.getElementById('gh-pat').value = pat;
+  } catch (e) {
+    showView('notfound');
+  }
+}
+
+function renderLive() {
+  const { meta, schedule, scores } = tourData;
+  document.getElementById('tour-title').textContent = meta.name;
+  const dateStr = meta.date ? ' · ' + meta.date : '';
+  document.getElementById('tour-meta').textContent =
+    `${meta.players.length} pelaajaa · ${schedule.length} kierrosta${dateStr}`;
+  document.getElementById('share-url').textContent = location.href;
+  renderRounds(schedule, scores || {});
+  renderStandings(scores || {});
+}
+
+function setupScoresListener(id) {
+  if (scoresOff) scoresOff();
+  const ref = db.ref('tournaments/' + id + '/scores');
+  ref.on('value', snap => {
+    const scores = snap.val() || {};
+    tourData.scores = scores;
+    syncInputs(scores);
+    renderStandings(scores);
+  });
+  scoresOff = () => ref.off('value');
+}
+
+function renderRounds(schedule, scores) {
+  const container = document.getElementById('rounds-container');
+  container.innerHTML = schedule.map(({ round, courts }) => {
+    const matchesHtml = courts.map((court, ci) => {
+      const key = 'r' + round + 'c' + ci;
+      const sc = scores[key] || {};
+      return `<div class="match-card" id="mc-${key}">
+        <div>
+          <div class="team-name">${esc(court.a[0])} &amp; ${esc(court.a[1])}</div>
+          <div class="court-label">Kenttä ${ci + 1}</div>
+        </div>
+        <div class="score-inputs">
+          <input type="number" min="0" max="99" class="score-inp"
+            data-key="${key}" data-field="sa"
+            value="${sc.sa !== undefined ? sc.sa : ''}" placeholder="–">
+          <span class="dash">–</span>
+          <input type="number" min="0" max="99" class="score-inp"
+            data-key="${key}" data-field="sb"
+            value="${sc.sb !== undefined ? sc.sb : ''}" placeholder="–">
+        </div>
+        <div class="team-name">${esc(court.b[0])} &amp; ${esc(court.b[1])}</div>
+      </div>`;
+    }).join('');
+
+    const allDone = courts.every((_, ci) => {
+      const sc = scores['r' + round + 'c' + ci] || {};
+      return sc.sa !== undefined && sc.sb !== undefined;
+    });
+    return `<div class="round-block">
+      <div class="round-header${allDone ? ' done' : ''}" id="rh-${round}">
+        <span>Kierros ${round}</span>
+        <span class="round-status">${allDone ? '✓ Valmis' : ''}</span>
+      </div>
+      ${matchesHtml}
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('.score-inp').forEach(inp => {
+    inp.addEventListener('input', onScoreInput);
+  });
+}
+
+function onScoreInput(e) {
+  const { key, field } = e.target.dataset;
+  const val = e.target.value;
+  const tk = key + field;
+  clearTimeout(debounceTimers[tk]);
+  debounceTimers[tk] = setTimeout(async () => {
+    const n = parseInt(val);
+    const ref = db.ref('tournaments/' + tourId + '/scores/' + key + '/' + field);
+    if (val === '' || isNaN(n)) {
+      await ref.remove();
+    } else {
+      await ref.set(n);
+    }
+  }, 600);
+}
+
+function syncInputs(scores) {
+  tourData.schedule.forEach(({ round, courts }) => {
+    const allDone = courts.every((_, ci) => {
+      const sc = scores['r' + round + 'c' + ci] || {};
+      return sc.sa !== undefined && sc.sb !== undefined;
+    });
+    const hdr = document.getElementById('rh-' + round);
+    if (hdr) {
+      hdr.className = 'round-header' + (allDone ? ' done' : '');
+      const st = hdr.querySelector('.round-status');
+      if (st) st.textContent = allDone ? '✓ Valmis' : '';
+    }
+  });
+  document.querySelectorAll('.score-inp').forEach(inp => {
+    if (document.activeElement === inp) return;
+    const { key, field } = inp.dataset;
+    const sc = scores[key] || {};
+    const v = sc[field];
+    inp.value = v !== undefined ? v : '';
+  });
+}
+
+function renderStandings(scores) {
+  const { players } = tourData.meta;
+  const { schedule } = tourData;
+  const pts = {}, wins = {}, losses = {};
+  players.forEach(p => { pts[p] = 0; wins[p] = 0; losses[p] = 0; });
+
+  schedule.forEach(({ round, courts }) => {
+    courts.forEach((court, ci) => {
+      const sc = scores['r' + round + 'c' + ci];
+      if (!sc || sc.sa === undefined || sc.sb === undefined) return;
+      const sa = +sc.sa, sb = +sc.sb;
+      court.a.forEach(p => { pts[p] += sa; if (sa > sb) wins[p]++; else if (sb > sa) losses[p]++; });
+      court.b.forEach(p => { pts[p] += sb; if (sb > sa) wins[p]++; else if (sa > sb) losses[p]++; });
+    });
+  });
+
+  const sorted = [...players].sort((a, b) => pts[b] - pts[a]);
+  document.getElementById('standings-body').innerHTML = sorted.map((p, i) => {
+    const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    return `<tr class="${cls}">
+      <td class="rank">${i + 1}</td>
+      <td>${esc(p)}</td>
+      <td class="pts">${pts[p]}</td>
+      <td class="wl">${wins[p]}&ndash;${losses[p]}</td>
+    </tr>`;
+  }).join('');
+}
+
+function copyShare() {
+  navigator.clipboard.writeText(location.href).then(() => {
+    const btn = document.getElementById('copy-share-btn');
+    btn.textContent = '✓ Kopioitu!';
+    setTimeout(() => { btn.textContent = '📋 Kopioi linkki'; }, 2000);
+  });
+}
+
+// ============================================================
+// SCHEDULE – K_{2n} 1-factorization
+// ============================================================
+function buildSchedule(players) {
+  const ps = [...players];
+  for (let i = ps.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ps[i], ps[j]] = [ps[j], ps[i]];
+  }
+  const n = ps.length;
+  const fixed = ps[n - 1];
+  const rot = ps.slice(0, n - 1);
+  const rounds = [];
+  for (let r = 0; r < n - 1; r++) {
+    const pairs = [];
+    pairs.push([fixed, rot[0]]);
+    for (let i = 1; i <= (n - 2) / 2; i++) pairs.push([rot[i], rot[n - 1 - i]]);
+    const courts = [];
+    for (let i = 0; i < pairs.length; i += 2) courts.push({ a: pairs[i], b: pairs[i + 1] });
+    rounds.push({ round: r + 1, courts });
+    rot.unshift(rot.pop());
+  }
+  return rounds;
+}
+
+// ============================================================
+// GITHUB SAVE
+// ============================================================
+function onPatInput() {
+  const pat = document.getElementById('gh-pat').value.trim();
+  if (pat) localStorage.setItem('gh_pat', pat);
+}
+
+async function saveToGitHub() {
+  const token = document.getElementById('gh-pat').value.trim();
+  if (!token) { showGhStatus('error', '✗ Syötä GitHub PAT ensin.'); return; }
+
+  const snap = await db.ref('tournaments/' + tourId + '/scores').once('value');
+  const scores = snap.val() || {};
+  const { schedule, meta } = tourData;
+
+  const newMatches = schedule.flatMap(({ round, courts }) =>
+    courts.map((court, ci) => {
+      const sc = scores['r' + round + 'c' + ci] || {};
+      return {
+        r: round, a: court.a, b: court.b,
+        sa: sc.sa !== undefined ? +sc.sa : null,
+        sb: sc.sb !== undefined ? +sc.sb : null
+      };
+    })
+  );
+
+  const incomplete = newMatches.filter(m => m.sa === null || m.sb === null).length;
+  if (incomplete > 0 && !confirm(`${incomplete} ottelulla ei ole tulosta. Tallennetaanko silti?`)) return;
+
+  const btn = document.getElementById('save-gh-btn');
+  btn.disabled = true;
+  showGhStatus('info', '⏳ Haetaan data GitHubista…');
+
+  const OWNER = 'vuoreksenpeikot';
+  const REPO = 'vuoreksenpeikot.github.io';
+  const PATH = 'data/all-matches.json';
+
+  try {
+    const getRes = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
+      { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } }
+    );
+    if (!getRes.ok) throw new Error(`GET epäonnistui: ${getRes.status}`);
+    const getJson = await getRes.json();
+    const sha = getJson.sha;
+    const current = JSON.parse(atob(getJson.content.replace(/\n/g, '')));
+
+    const maxId = current.tours.reduce((m, t) => Math.max(m, t.id), 0);
+    const newTourId = maxId + 1;
+
+    let displayDate = meta.date || '';
+    if (displayDate.length === 10) {
+      const [y, mo, d] = displayDate.split('-');
+      displayDate = `${d}.${mo}.${y}`;
+    }
+
+    const newTour = { id: newTourId, name: meta.name, date: displayDate };
+    const matchesToAdd = newMatches
+      .filter(m => m.sa !== null && m.sb !== null)
+      .map(m => ({ tourId: newTourId, r: m.r, a: m.a, b: m.b, sa: m.sa, sb: m.sb }));
+
+    const updated = {
+      tours: [...current.tours, newTour],
+      matches: [...current.matches, ...matchesToAdd]
+    };
+    const updatedStr = JSON.stringify(updated, null, 2);
+
+    showGhStatus('info', '⏳ Kirjoitetaan GitHubiin…');
+
+    const putRes = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `Add ${meta.name} results (${matchesToAdd.length} matches)`,
+          content: btoa(unescape(encodeURIComponent(updatedStr))),
+          sha
+        })
+      }
+    );
+
+    if (!putRes.ok) {
+      const err = await putRes.json().catch(() => ({}));
+      throw new Error(`PUT epäonnistui: ${putRes.status} ${err.message || ''}`);
+    }
+
+    showGhStatus('ok', `✓ Tallennettu! ${meta.name} (${matchesToAdd.length} ottelua) lisätty. GitHub Pages päivittyy ~1 min.`);
+    btn.textContent = '✓ Tallennettu';
+    localStorage.setItem('gh_pat', token);
+  } catch (e) {
+    showGhStatus('error', '✗ ' + e.message);
+    btn.disabled = false;
+  }
+}
+
+function showGhStatus(type, msg) {
+  const el = document.getElementById('gh-status');
+  el.className = 'gh-status ' + type;
+  el.textContent = msg;
+}
+
+// ============================================================
+// UTIL
+// ============================================================
+function showView(name) {
+  ['loading', 'create', 'live', 'notfound'].forEach(v => {
+    document.getElementById('view-' + v).className = 'view' + (v === name ? ' active' : '');
+  });
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>

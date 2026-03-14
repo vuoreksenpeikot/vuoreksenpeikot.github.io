@@ -636,13 +636,13 @@
     <div id="rounds-container"></div>
     <div class="card">
       <div class="sec-label">Tulokset tilastosivulle</div>
-      <h2>Tallenna GitHubiin</h2>
+      <h2>Vie tilastoihin</h2>
       <p style="font-family:'JetBrains Mono',monospace; font-size: 0.78rem; color: var(--ink2); margin-bottom: 14px; line-height: 1.6;">
-        Tarvitset GitHub PAT:in, jolla on <strong>Contents: Read and write</strong> -oikeus tähän repoon. Token tallennetaan vain selaimeesi.
+        Tarvitset Vesalta salasanan. Kysy!
       </p>
       <div class="token-row">
         <div>
-          <label for="gh-pat">GitHub PAT</label>
+          <label for="gh-pat">Salasana</label>
           <input type="password" id="gh-pat" placeholder="github_pat_…" autocomplete="off" oninput="onPatInput()">
         </div>
         <button class="btn btn-gold btn-sm" id="save-gh-btn" onclick="saveToGitHub()">💾 Tallenna</button>
@@ -1120,11 +1120,12 @@ function copyShare() {
 }
 
 // ============================================================
-// SCHEDULE – K_{2n} 1-factorization + optimised court pairing
+// SCHEDULE – K_{2n} 1-factorization + recency-weighted court pairing
 // Taataan: jokainen pelaa kumppanina jokaisen kanssa tasan kerran (1-faktorisointi).
-// Optimoidaan: kenttäpariutus minimoi vastustajatoistumia kierros kerrallaan,
-// jolloin myös "jokainen kohtaa jokaisen vastustajana" jakautuu niin tasaisesti
-// kuin formaatti geometrisesti sallii (n=8 ja n=12: ideaali on 2 kertaa per pari).
+// Optimoidaan: kenttäpariutus minimoi vastustajatoistumia painottamalla tuoreita
+// kohtaamisia selvästi enemmän (edellinen kierros ×8, kaksi kierrosta sitten ×3,
+// vanhemmat ×1), jolloin pelaajat eivät kohtaa samaa vastustajaa peräkkäisillä
+// kierroksilla ja pitkällä tähtäimellä jakautuma pysyy silti tasaisena.
 // ============================================================
 
 // Palauttaa kaikki tavat jakaa `pairs`-lista kentiksi (kukin kenttä = { a, b }).
@@ -1154,10 +1155,12 @@ function buildSchedule(players) {
   const fixed = ps[n - 1];
   const rot = ps.slice(0, n - 1);
 
-  // Laskuri: kuinka monta kertaa kaksi pelaajaa on kohdannut vastustajana
-  const faced = {};
+  // Tallentaa millä kierroksilla (0-indeksoitu) kukin pari on kohdannut vastustajina.
+  // Tuoreet kohtaamiset saavat suuremman painon jotta peräkkäiset toistot minimoidaan.
+  const facedAt = {};
   const faceKey = (a, b) => a < b ? a + '\x00' + b : b + '\x00' + a;
-  const getFaced = (a, b) => faced[faceKey(a, b)] || 0;
+  // Pienempi recency-paino = parempi; gap 1 → ×8, gap 2 → ×3, vanhempi → ×1
+  const recencyWeight = (gap) => gap === 1 ? 8 : gap === 2 ? 3 : 1;
 
   const rounds = [];
   for (let r = 0; r < n - 1; r++) {
@@ -1166,14 +1169,17 @@ function buildSchedule(players) {
     pairs.push([fixed, rot[0]]);
     for (let i = 1; i <= (n - 2) / 2; i++) pairs.push([rot[i], rot[n - 1 - i]]);
 
-    // Valitse kenttäpariutus joka minimoi vastustajatoistumien summan
+    // Valitse kenttäpariutus joka minimoi painotetun vastustajatoistumapisteiden summan
     const allPairings = getAllCourtPairings(pairs);
     let bestScore = Infinity;
     let bestCourts = allPairings[0];
     for (const pairing of allPairings) {
       let score = 0;
       for (const { a, b } of pairing) {
-        for (const pa of a) for (const pb of b) score += getFaced(pa, pb);
+        for (const pa of a) for (const pb of b) {
+          const prev = facedAt[faceKey(pa, pb)];
+          if (prev) for (const pr of prev) score += recencyWeight(r - pr);
+        }
       }
       if (score < bestScore) { bestScore = score; bestCourts = pairing; }
     }
@@ -1182,7 +1188,7 @@ function buildSchedule(players) {
     for (const { a, b } of bestCourts) {
       for (const pa of a) for (const pb of b) {
         const k = faceKey(pa, pb);
-        faced[k] = (faced[k] || 0) + 1;
+        (facedAt[k] = facedAt[k] || []).push(r);
       }
     }
 

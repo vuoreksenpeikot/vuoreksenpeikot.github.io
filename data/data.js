@@ -10,7 +10,7 @@ let ELO_HISTORY = {}; // {player: [{ti, elo}, ...]} — snapshot Elo-arvo jokais
 async function loadData() {
   try {
     // Lataa kaikki data yhdestä tiedostosta
-    const res = await fetch('data/all-matches.json');
+    const res = await fetch('data/all-matches.json?t=' + Date.now());
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     

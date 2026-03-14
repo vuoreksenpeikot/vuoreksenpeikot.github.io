@@ -456,6 +456,34 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── COURT PICKER ── */
+    .court-pick-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 8px;
+    }
+    .court-btn {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.92rem; font-weight: 700;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--ink);
+      transition: all .13s;
+      user-select: none;
+    }
+    .court-btn:hover:not(.locked) { border-color: var(--border2); background: var(--card2); }
+    .court-btn.selected {
+      background: var(--green);
+      border-color: var(--green-bright);
+      color: #fff;
+    }
+    .court-btn.locked:not(.selected) { opacity: 0.3; cursor: default; }
+
     /* ── KNOWN PLAYER CHIPS ── */
     .known-chips-wrap { margin-bottom: 6px; }
     .known-chips-label {
@@ -568,6 +596,8 @@
         <option value="8">8 pelaajaa (7 kierrosta)</option>
         <option value="12">12 pelaajaa (11 kierrosta)</option>
       </select>
+      <label style="margin-top: 18px;" id="courts-label">Kentät (valitse 2)</label>
+      <div id="court-picker" class="court-pick-grid"></div>
       <label style="margin-top: 18px;">Pelaajat</label>
       <div id="known-chips-wrap" class="known-chips-wrap" style="display:none; margin-top:10px;">
         <div class="known-chips-label">Valitse tuttu pelaaja</div>
@@ -680,6 +710,7 @@ function initCreateForm() {
   document.getElementById('tour-date').value =
     `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   renderPlayerSlots();
+  renderCourtPicker();
   const pat = localStorage.getItem('gh_pat');
   if (pat) {
     const el = document.getElementById('gh-pat');
@@ -713,6 +744,7 @@ async function loadKnownPlayers() {
 }
 
 function renderPlayerSlots() {
+  renderCourtPicker();
   const n = parseInt(document.getElementById('player-count').value);
   const grid = document.getElementById('player-grid');
   grid.innerHTML = '';
@@ -725,6 +757,40 @@ function renderPlayerSlots() {
     grid.appendChild(d);
   }
   updateChipsState();
+}
+
+function renderCourtPicker() {
+  const n = parseInt(document.getElementById('player-count').value);
+  const needed = n === 12 ? 3 : 2;
+  document.getElementById('courts-label').textContent = `Kentät (valitse ${needed})`;
+  const picker = document.getElementById('court-picker');
+  picker.innerHTML = '';
+  for (let i = 1; i <= 9; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'court-btn';
+    btn.textContent = i;
+    btn.dataset.court = i;
+    btn.addEventListener('click', () => toggleCourt(btn, needed));
+    picker.appendChild(btn);
+  }
+}
+
+function toggleCourt(btn, needed) {
+  if (btn.classList.contains('selected')) {
+    btn.classList.remove('selected');
+  } else {
+    const alreadySelected = document.querySelectorAll('#court-picker .court-btn.selected').length;
+    if (alreadySelected >= needed) return;
+    btn.classList.add('selected');
+  }
+  const selected = document.querySelectorAll('#court-picker .court-btn.selected').length;
+  const atMax = selected >= needed;
+  document.querySelectorAll('#court-picker .court-btn').forEach(b => {
+    if (b.classList.contains('selected')) b.classList.remove('locked');
+    else if (atMax) b.classList.add('locked');
+    else b.classList.remove('locked');
+  });
 }
 
 function pickChip(btn) {
@@ -773,6 +839,9 @@ async function createTournament() {
   const date = document.getElementById('tour-date').value;
   const n = parseInt(document.getElementById('player-count').value);
   const players = [...document.querySelectorAll('#player-grid input')].map(i => i.value.trim()).filter(Boolean);
+  const needed = n === 12 ? 3 : 2;
+  const courts = [...document.querySelectorAll('#court-picker .court-btn.selected')]
+    .map(b => parseInt(b.dataset.court)).sort((a, b) => a - b);
 
   if (players.length !== n) {
     statusEl.textContent = `Täytä kaikki ${n} pelaajan nimet.`;
@@ -784,6 +853,11 @@ async function createTournament() {
     statusEl.style.color = '#ff8a80';
     return;
   }
+  if (courts.length !== needed) {
+    statusEl.textContent = `Valitse tasan ${needed} kenttää.`;
+    statusEl.style.color = '#ff8a80';
+    return;
+  }
 
   btn.disabled = true;
   statusEl.style.color = 'var(--muted)';
@@ -792,7 +866,7 @@ async function createTournament() {
   try {
     const schedule = buildSchedule(players);
     const ref = db.ref('tournaments').push();
-    await ref.set({ meta: { name, date, players }, schedule });
+    await ref.set({ meta: { name, date, players, courts }, schedule });
     location.href = '?t=' + ref.key;
   } catch (e) {
     statusEl.textContent = '✗ Virhe: ' + e.message;
@@ -852,10 +926,12 @@ function renderRounds(schedule, scores) {
     const matchesHtml = courts.map((court, ci) => {
       const key = 'r' + round + 'c' + ci;
       const sc = scores[key] || {};
+      const courtNum = (tourData.meta.courts && tourData.meta.courts[ci] != null)
+        ? tourData.meta.courts[ci] : ci + 1;
       return `<div class="match-card" id="mc-${key}">
         <div>
           <div class="team-name">${esc(court.a[0])} &amp; ${esc(court.a[1])}</div>
-          <div class="court-label">Kenttä ${ci + 1}</div>
+          <div class="court-label">Kenttä ${courtNum}</div>
         </div>
         <div class="score-inputs">
           <button type="button" class="score-btn score-inp${sc.sa !== undefined ? ' has-value' : ''}"

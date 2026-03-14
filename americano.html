@@ -399,6 +399,60 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── KNOWN PLAYER CHIPS ── */
+    .known-chips-wrap { margin-bottom: 6px; }
+    .known-chips-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--ink3);
+      margin-bottom: 8px;
+    }
+    .known-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .known-chip {
+      padding: 7px 14px;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      border-radius: 6px;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .13s;
+      color: var(--ink);
+      user-select: none;
+    }
+    .known-chip:hover:not(.used) { border-color: var(--border2); background: var(--card2); }
+    .known-chip.used {
+      opacity: 0.35;
+      cursor: default;
+      background: var(--bg2);
+      border-style: dashed;
+    }
+    .player-slot.filled { border-color: var(--border2); background: var(--card); }
+    .player-slot.filled .slot-clear {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--ink3);
+      font-size: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background .1s;
+    }
+    .player-slot.filled .slot-clear:hover { background: #fde8e8; border-color: var(--red); color: var(--red); }
+    .slot-clear { display: none; }
+
     /* ── MOBILE ── */
     @media (max-width: 600px) {
       .hero, .nav, .container { padding-left: 16px; padding-right: 16px; }
@@ -452,6 +506,11 @@
         <option value="12">12 pelaajaa (11 kierrosta)</option>
       </select>
       <label style="margin-top: 18px;">Pelaajat</label>
+      <div id="known-chips-wrap" class="known-chips-wrap" style="display:none; margin-top:10px;">
+        <div class="known-chips-label">Valitse tuttu pelaaja</div>
+        <div id="known-chips" class="known-chips"></div>
+        <div style="margin: 10px 0 4px; border-top: 1px solid var(--border);"></div>
+      </div>
       <div id="player-grid" class="player-grid"></div>
       <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
         <button class="btn btn-primary" id="create-btn" onclick="createTournament()">Luo turnaus ja jaa linkki →</button>
@@ -570,8 +629,18 @@ async function loadKnownPlayers() {
     const r = await fetch('data/all-matches.json?t=' + Date.now());
     const d = await r.json();
     const known = [...new Set(d.matches.flatMap(m => [...m.a, ...m.b]))].sort();
+    // datalist for text autocomplete
     const dl = document.getElementById('known-players-dl');
     dl.innerHTML = known.map(p => `<option value="${esc(p)}">`).join('');
+    // clickable chips
+    if (known.length > 0) {
+      const wrap = document.getElementById('known-chips-wrap');
+      const chips = document.getElementById('known-chips');
+      wrap.style.display = 'block';
+      chips.innerHTML = known.map(p =>
+        `<button type="button" class="known-chip" data-name="${esc(p)}" onclick="pickChip(this)">${esc(p)}</button>`
+      ).join('');
+    }
   } catch (e) {}
 }
 
@@ -582,9 +651,51 @@ function renderPlayerSlots() {
   for (let i = 1; i <= n; i++) {
     const d = document.createElement('div');
     d.className = 'player-slot';
-    d.innerHTML = `<span class="slot-num">${i}.</span><input type="text" list="known-players-dl" placeholder="Pelaaja ${i}" data-idx="${i - 1}">`;
+    d.innerHTML = `<span class="slot-num">${i}.</span><input type="text" list="known-players-dl" placeholder="Pelaaja ${i}" data-idx="${i - 1}"><span class="slot-clear" title="Tyhjennä" onclick="clearSlot(this)">✕</span>`;
+    const inp = d.querySelector('input');
+    inp.addEventListener('input', updateChipsState);
     grid.appendChild(d);
   }
+  updateChipsState();
+}
+
+function pickChip(btn) {
+  if (btn.classList.contains('used')) return;
+  const name = btn.dataset.name;
+  // find first empty slot
+  const inputs = [...document.querySelectorAll('#player-grid input')];
+  const empty = inputs.find(i => i.value.trim() === '');
+  if (!empty) return;
+  empty.value = name;
+  empty.closest('.player-slot').classList.add('filled');
+  updateChipsState();
+}
+
+function clearSlot(clearBtn) {
+  const slot = clearBtn.closest('.player-slot');
+  const inp = slot.querySelector('input');
+  inp.value = '';
+  slot.classList.remove('filled');
+  updateChipsState();
+}
+
+function updateChipsState() {
+  const used = new Set(
+    [...document.querySelectorAll('#player-grid input')]
+      .map(i => i.value.trim().toLowerCase())
+      .filter(Boolean)
+  );
+  // sync slot filled state
+  document.querySelectorAll('#player-grid input').forEach(inp => {
+    const slot = inp.closest('.player-slot');
+    if (inp.value.trim()) slot.classList.add('filled');
+    else slot.classList.remove('filled');
+  });
+  // sync chip state
+  document.querySelectorAll('.known-chip').forEach(chip => {
+    if (used.has(chip.dataset.name.toLowerCase())) chip.classList.add('used');
+    else chip.classList.remove('used');
+  });
 }
 
 async function createTournament() {

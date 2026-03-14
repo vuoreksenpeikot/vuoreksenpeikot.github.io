@@ -345,26 +345,57 @@
       margin-top: 2px;
     }
     .score-inputs { display: flex; align-items: center; gap: 6px; justify-content: center; }
-    .score-inputs input {
-      width: 54px;
-      text-align: center;
-      padding: 8px 4px;
+    .score-btn {
+      width: 54px; height: 46px;
+      display: flex; align-items: center; justify-content: center;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--ink);
-      background: var(--card2);
-    }
-    .score-inputs input.auto-filled {
+      font-size: 1.15rem; font-weight: 700;
       color: var(--ink3);
-      border-color: var(--border);
-      border-style: dashed;
+      background: var(--card2);
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: border-color .13s, background .13s;
+      padding: 0;
     }
+    .score-btn:active { transform: scale(0.94); }
+    .score-btn.has-value { color: var(--ink); border-color: var(--border2); background: rgba(26,138,52,0.06); }
+    .score-btn.auto-filled { color: var(--ink3); border-style: dashed; background: var(--bg); }
     .score-inputs .dash {
       font-family: 'JetBrains Mono', monospace;
       color: var(--ink3);
       font-size: 1rem;
     }
+    /* picker */
+    #score-picker-overlay { position: fixed; inset: 0; z-index: 1000; }
+    #score-picker {
+      position: fixed;
+      background: var(--card);
+      border: 1.5px solid var(--border2);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+      padding: 8px;
+      z-index: 1001;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+      width: 264px;
+    }
+    .picker-num {
+      padding: 11px 2px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.92rem; font-weight: 700;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      background: var(--card2);
+      color: var(--ink);
+      transition: all .1s;
+    }
+    .picker-num:hover { background: var(--bg2); border-color: var(--border); }
+    .picker-num.mid { background: var(--green); color: #fff; border-color: var(--green-bright); }
+    .picker-num.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
 
     /* ── GITHUB SAVE ── */
     .token-row { display: flex; gap: 8px; align-items: flex-end; }
@@ -471,7 +502,7 @@
       #create-btn { width: 100%; justify-content: center; }
       .known-chip { padding: 10px 16px; font-size: 14px; }
       .btn { min-height: 44px; }
-      .score-inputs input { width: 62px; font-size: 1.25rem; padding: 10px 4px; }
+      .score-btn { width: 62px; height: 52px; font-size: 1.25rem; }
     }
   </style>
 </head>
@@ -806,13 +837,13 @@ function renderRounds(schedule, scores) {
           <div class="court-label">Kenttä ${ci + 1}</div>
         </div>
         <div class="score-inputs">
-          <input type="number" min="0" max="32" class="score-inp"
-            data-key="${key}" data-field="sa"
-            value="${sc.sa !== undefined ? sc.sa : ''}" placeholder="–">
+          <button type="button" class="score-btn score-inp${sc.sa !== undefined ? ' has-value' : ''}"
+            data-key="${key}" data-field="sa" data-value="${sc.sa !== undefined ? sc.sa : ''}"
+            onclick="openScorePicker(this)">${sc.sa !== undefined ? sc.sa : '–'}</button>
           <span class="dash">–</span>
-          <input type="number" min="0" max="32" class="score-inp"
-            data-key="${key}" data-field="sb"
-            value="${sc.sb !== undefined ? sc.sb : ''}" placeholder="–">
+          <button type="button" class="score-btn score-inp${sc.sb !== undefined ? ' has-value' : ''}"
+            data-key="${key}" data-field="sb" data-value="${sc.sb !== undefined ? sc.sb : ''}"
+            onclick="openScorePicker(this)">${sc.sb !== undefined ? sc.sb : '–'}</button>
         </div>
         <div class="team-name">${esc(court.b[0])} &amp; ${esc(court.b[1])}</div>
       </div>`;
@@ -831,46 +862,87 @@ function renderRounds(schedule, scores) {
     </div>`;
   }).join('');
 
-  document.querySelectorAll('.score-inp').forEach(inp => {
-    inp.addEventListener('input', onScoreInput);
-  });
+  // no listeners needed — buttons use onclick
 }
 
-function onScoreInput(e) {
-  const inp = e.target;
-  const { key, field } = inp.dataset;
-  const val = inp.value;
-  const n = parseInt(val);
+// ============================================================
+// SCORE PICKER
+// ============================================================
+let pickerTarget = null;
 
-  // auto-fill complement to 32
+function openScorePicker(btn) {
+  closeScorePicker();
+  pickerTarget = btn;
+  const currentVal = btn.dataset.value !== '' ? parseInt(btn.dataset.value) : null;
+
+  // order: 17, 18 … 32, 16, 15 … 0
+  const nums = [];
+  for (let i = 17; i <= 32; i++) nums.push(i);
+  for (let i = 16; i >= 0; i--) nums.push(i);
+
+  const overlay = document.createElement('div');
+  overlay.id = 'score-picker-overlay';
+  overlay.addEventListener('click', closeScorePicker);
+
+  const picker = document.createElement('div');
+  picker.id = 'score-picker';
+  picker.addEventListener('click', e => e.stopPropagation());
+  picker.innerHTML = nums.map(n =>
+    `<button type="button" class="picker-num${n === 17 ? ' mid' : ''}${n === currentVal ? ' selected' : ''}" onclick="pickScore(${n})">${n}</button>`
+  ).join('');
+
+  overlay.appendChild(picker);
+  document.body.appendChild(overlay);
+
+  // position near button
+  const rect = btn.getBoundingClientRect();
+  const pw = 264, ph = 200;
+  let left = rect.left + rect.width / 2 - pw / 2;
+  let top = rect.bottom + 8;
+  if (left < 8) left = 8;
+  if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+  if (top + ph > window.innerHeight - 8) top = rect.top - ph - 8;
+  picker.style.left = left + 'px';
+  picker.style.top = top + 'px';
+}
+
+function closeScorePicker() {
+  const el = document.getElementById('score-picker-overlay');
+  if (el) el.remove();
+  pickerTarget = null;
+}
+
+function pickScore(val) {
+  if (!pickerTarget) return;
+  const btn = pickerTarget;
+  const { key, field } = btn.dataset;
+
+  btn.dataset.value = val;
+  btn.textContent = val;
+  btn.classList.add('has-value');
+  btn.classList.remove('auto-filled');
+
+  // auto-fill complement
   const partnerField = field === 'sa' ? 'sb' : 'sa';
-  const partnerInp = document.querySelector(`.score-inp[data-key="${key}"][data-field="${partnerField}"]`);
-  if (partnerInp && val !== '' && !isNaN(n) && n >= 0 && n <= 32) {
-    const complement = 32 - n;
-    if (partnerInp.value !== String(complement)) {
-      partnerInp.value = complement;
-      partnerInp.classList.add('auto-filled');
-    }
-  } else if (val === '' && partnerInp) {
-    // clear partner too if this field is cleared
-    partnerInp.value = '';
-    partnerInp.classList.remove('auto-filled');
+  const partnerBtn = document.querySelector(`.score-btn[data-key="${key}"][data-field="${partnerField}"]`);
+  if (partnerBtn) {
+    const comp = 32 - val;
+    partnerBtn.dataset.value = comp;
+    partnerBtn.textContent = comp;
+    partnerBtn.classList.add('has-value', 'auto-filled');
+    writeScore(key, partnerField, comp);
   }
-  inp.classList.remove('auto-filled');
 
-  // debounce-write both fields
-  const writeField = (f, v) => {
-    const tk = key + f;
-    clearTimeout(debounceTimers[tk]);
-    debounceTimers[tk] = setTimeout(async () => {
-      const num = parseInt(v);
-      const ref = db.ref('tournaments/' + tourId + '/scores/' + key + '/' + f);
-      if (v === '' || isNaN(num)) await ref.remove();
-      else await ref.set(num);
-    }, 600);
-  };
-  writeField(field, val);
-  if (partnerInp) writeField(partnerField, partnerInp.value);
+  writeScore(key, field, val);
+  closeScorePicker();
+}
+
+function writeScore(key, field, val) {
+  const tk = key + field;
+  clearTimeout(debounceTimers[tk]);
+  debounceTimers[tk] = setTimeout(async () => {
+    await db.ref('tournaments/' + tourId + '/scores/' + key + '/' + field).set(val);
+  }, 200);
 }
 
 function syncInputs(scores) {
@@ -886,12 +958,19 @@ function syncInputs(scores) {
       if (st) st.textContent = allDone ? '✓ Valmis' : '';
     }
   });
-  document.querySelectorAll('.score-inp').forEach(inp => {
-    if (document.activeElement === inp) return;
-    const { key, field } = inp.dataset;
+  document.querySelectorAll('.score-btn').forEach(btn => {
+    const { key, field } = btn.dataset;
     const sc = scores[key] || {};
     const v = sc[field];
-    inp.value = v !== undefined ? v : '';
+    if (v !== undefined) {
+      btn.dataset.value = v;
+      btn.textContent = v;
+      btn.classList.add('has-value');
+    } else {
+      btn.dataset.value = '';
+      btn.textContent = '–';
+      btn.classList.remove('has-value', 'auto-filled');
+    }
   });
 }
 

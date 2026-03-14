@@ -177,6 +177,7 @@
     }
     input:focus, select:focus { border-color: var(--border2); }
     input::placeholder { color: var(--ink3); opacity: 0.5; }
+    input[type=date] { -webkit-appearance: none; appearance: none; cursor: pointer; font-family: 'Syne', sans-serif; }
 
     /* ── BUTTONS ── */
     .btn {
@@ -465,6 +466,12 @@
       .match-card { grid-template-columns: 1fr; gap: 8px; }
       .score-inputs { justify-content: flex-start; }
       .player-grid { grid-template-columns: 1fr 1fr; }
+      .token-row { flex-direction: column; align-items: stretch; }
+      .token-row .btn-gold { width: 100%; justify-content: center; margin-top: 4px; }
+      #create-btn { width: 100%; justify-content: center; }
+      .known-chip { padding: 10px 16px; font-size: 14px; }
+      .btn { min-height: 44px; }
+      .score-inputs input { width: 62px; font-size: 1.25rem; padding: 10px 4px; }
     }
   </style>
 </head>

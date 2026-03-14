@@ -490,6 +490,123 @@
     .player-slot.filled .slot-clear:hover { background: #fde8e8; border-color: var(--red); color: var(--red); }
     .slot-clear { display: none; }
 
+    /* ── PREVIEW (Ennakko) ── */
+    .preview-details {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .preview-summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 20px;
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--ink2);
+    }
+    .preview-summary::-webkit-details-marker { display: none; }
+    .preview-summary .preview-arrow {
+      font-size: 0.6rem;
+      color: var(--accent);
+      transition: transform 0.2s;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .preview-details[open] .preview-summary .preview-arrow { transform: rotate(90deg); }
+    .preview-body {
+      padding: 0 24px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .preview-headline {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(16px, 3vw, 21px);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--ink);
+      margin: 18px 0 5px;
+      line-height: 1.2;
+    }
+    .preview-byline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--ink3);
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+    .preview-text {
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .preview-section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 20px 0 8px;
+    }
+    .preview-player-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(0,80,30,0.1);
+    }
+    .preview-player-row:last-of-type { border-bottom: none; }
+    .preview-player-name {
+      font-weight: 800;
+      font-size: 0.93rem;
+      min-width: 90px;
+      flex-shrink: 0;
+    }
+    .preview-player-stats {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--ink3);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .preview-player-note {
+      font-size: 0.83rem;
+      color: var(--ink2);
+      flex: 1;
+      line-height: 1.4;
+    }
+    .preview-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      vertical-align: middle;
+    }
+    .preview-badge-debut { background: rgba(140,98,0,0.12); color: var(--accent); }
+    .preview-badge-fav { background: rgba(26,138,52,0.12); color: var(--green-bright); }
+    .preview-footer {
+      margin-top: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.67rem;
+      color: var(--ink3);
+      opacity: 0.65;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
     /* ── MOBILE ── */
     @media (max-width: 600px) {
       .hero, .nav, .container { padding-left: 16px; padding-right: 16px; }
@@ -503,6 +620,10 @@
       .known-chip { padding: 10px 16px; font-size: 14px; }
       .btn { min-height: 44px; }
       .score-btn { width: 62px; height: 52px; font-size: 1.25rem; }
+      .preview-player-row { flex-wrap: wrap; gap: 6px; }
+      .preview-player-note { min-width: 100%; order: 3; }
+      .preview-player-stats { order: 2; }
+      .preview-body { padding: 0 16px 20px; }
     }
   </style>
 </head>
@@ -570,6 +691,12 @@
       <span class="share-url" id="share-url"></span>
       <button class="btn btn-secondary btn-sm" id="copy-share-btn" onclick="copyShare()">📋 Kopioi linkki</button>
     </div>
+    <details class="preview-details" id="preview-section">
+      <summary class="preview-summary"><span class="preview-arrow">▶</span>&nbsp;📰&nbsp;Ennakko — klikkaa avataksesi</summary>
+      <div class="preview-body" id="preview-body">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--ink3); padding:16px 0;">Ladataan ennakkoa…</div>
+      </div>
+    </details>
     <div class="card">
       <div class="sec-label">Live</div>
       <h2 id="tour-title">Pistetaulu</h2>
@@ -634,6 +761,7 @@ const db = firebase.database();
 // ============================================================
 let tourId = null;
 let tourData = null;
+let histData = null;
 let scoresOff = null;
 const debounceTimers = {};
 
@@ -787,8 +915,12 @@ async function createTournament() {
 async function loadTournament(id) {
   showView('loading');
   try {
-    const snap = await db.ref('tournaments/' + id).once('value');
+    const [snap, histRes] = await Promise.all([
+      db.ref('tournaments/' + id).once('value'),
+      fetch('data/all-matches.json?t=' + Date.now()).catch(() => null)
+    ]);
     if (!snap.exists()) { showView('notfound'); return; }
+    histData = (histRes && histRes.ok) ? await histRes.json() : null;
     tourId = id;
     tourData = snap.val();
     if (!tourData.scores) tourData.scores = {};
@@ -802,6 +934,184 @@ async function loadTournament(id) {
   }
 }
 
+// ============================================================
+// PREVIEW — Turnauksen ennakkoartikkeli
+// ============================================================
+function computePlayerStats(players, histData) {
+  const stats = {};
+  const lowerMap = {};
+  players.forEach(p => {
+    stats[p] = { matches: 0, wins: 0, losses: 0, draws: 0, totalPts: 0, avgPts: 0, lastTourPos: null, lastTourName: null, isDebut: true };
+    lowerMap[p.toLowerCase()] = p;
+  });
+  if (!histData) return stats;
+
+  histData.matches.forEach(m => {
+    const processTeam = (team, pts, oppPts) => {
+      team.forEach(name => {
+        const canon = lowerMap[name.toLowerCase()];
+        if (!canon) return;
+        const s = stats[canon];
+        s.isDebut = false;
+        s.matches++;
+        s.totalPts += pts;
+        if (pts > oppPts) s.wins++;
+        else if (pts < oppPts) s.losses++;
+        else s.draws++;
+      });
+    };
+    processTeam(m.a, m.sa, m.sb);
+    processTeam(m.b, m.sb, m.sa);
+  });
+
+  players.forEach(p => {
+    const s = stats[p];
+    s.avgPts = s.matches > 0 ? Math.round((s.totalPts / s.matches) * 10) / 10 : 0;
+  });
+
+  if (histData.tours) {
+    histData.tours.forEach(tour => {
+      const tourMatches = histData.matches.filter(m => m.tourId === tour.id);
+      if (!tourMatches.length) return;
+      const tourPts = {};
+      tourMatches.forEach(m => {
+        m.a.forEach(p => { tourPts[p] = (tourPts[p] || 0) + m.sa; });
+        m.b.forEach(p => { tourPts[p] = (tourPts[p] || 0) + m.sb; });
+      });
+      Object.keys(tourPts).sort((a, b) => tourPts[b] - tourPts[a]).forEach((tp, idx) => {
+        const canon = lowerMap[tp.toLowerCase()];
+        if (canon) { stats[canon].lastTourPos = idx + 1; stats[canon].lastTourName = tour.name; }
+      });
+    });
+  }
+  return stats;
+}
+
+function generatePreviewHTML(tourName, displayDate, players, statsMap) {
+  const n = players.length;
+  const veterans = players.filter(p => !statsMap[p].isDebut);
+  const debuts = players.filter(p => statsMap[p].isDebut);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const sname = p => `<strong>${esc(p)}</strong>`;
+
+  const veteransSorted = [...veterans].sort((a, b) => {
+    const sA = statsMap[a], sB = statsMap[b];
+    const wrA = sA.matches > 0 ? sA.wins / sA.matches : 0;
+    const wrB = sB.matches > 0 ? sB.wins / sB.matches : 0;
+    const score = (wr, avg) => wr * 0.6 + (avg / 20) * 0.4;
+    return score(wrB, sB.avgPts) - score(wrA, sA.avgPts);
+  });
+
+  const introTemplates = [
+    () => `${n} pelaajaa, kenttä auki. ${esc(tourName)} alkaa tänään, ja ${veterans.length > 0 ? 'pelaajakaarti on viritellyt ottelutuntumaa jo aiemmissa turnauksissa' : 'kaikki lähtevät liikkeelle puhtaalta pöydältä'}. ${debuts.length > 0 ? `Mukaan astuu ${debuts.length === 1 ? 'myös yksi debytantti' : debuts.length + ' debytanttia'} – jännitys on taattu.` : 'Vahva kokemuspooli lupaa tasaista ja kovatasoista kamppailua.'}`,
+    () => `${esc(tourName)} kokoaa ${n} pelaajaa samalle kentälle. Americano-formaatti palkitsee tasaisen suorittajan: ${n - 1} kierrosta, vaihtuvat parit, kaikki kohtaavat kaikki. ${veterans.length > 0 ? 'Historiakatsaus paljastaa jo suosikkeja – mutta kentällä asiat saattavat näyttää toisenlaisilta.' : 'Historia ei tässä vaiheessa auta – kaikki alkaa nollasta.'}`,
+    () => `Peikot Padelin ${esc(tourName)} käynnistyy tänään. ${n} osallistujaa, ${n - 1} kierrosta ja loppuun jokainen sijoitus hankittava itse. ${debuts.length > 0 ? `${debuts.length === 1 ? 'Yksi nimi' : debuts.length + ' nimeä'} ilmestyy listaan ensi kertaa – yllätyspotentiaali on korkea.` : 'Tuttu kokoonpano, mutta tulokset tehdään aina uusiksi.'}`,
+  ];
+
+  const favTemplates = [
+    [
+      p => `${sname(p)} saapuu turnaukseen sarjan vahvimpana yksilönä. Voittoprosentti on huipputasoa ja pisteiden kerääminen on sujunut systemaattisesti turnauksesta toiseen.`,
+      p => `Tilastollinen ykkönen. ${sname(p)} on osoittanut johdonmukaisuutta, jota on vaikea sivuuttaa – häviöitä on harvassa ja pistepankki kasvaa ottelusta toiseen.`,
+      p => `${sname(p)} on nimi, jota vastaan taistellessa pitää olla tarkkana alusta loppuun. Voittoprosentti huipputasolla, pistekeskiarvo sen mukainen.`,
+    ],
+    [
+      p => `${sname(p)} on turnaukseen saapuvan kentän vakavin haastaja ykköstaistoon. Suoritukset ovat olleet tasaisia eikä hengitysetäisyyttä kärkeen ole paljon.`,
+      p => `${sname(p)} on pelannut itsensä tilastoissa haastaja-asemaan. Viime turnauksissa osoitettu laatu puhuu puolestaan.`,
+      p => `${sname(p)} ei tule kentälle häviämään. Viimeinen turnaussuoritus vahvisti paikan suosikkien joukossa, ja tänään odotetaan jatkoa sille trendille.`,
+    ],
+    [
+      p => `Kolmas suosikki, mutta ei kolmas luokka. ${sname(p)} on pelannut tarpeeksi otteluita näyttääkseen, mistä on kyse – nousut pistepöydässä eivät ole sattumia.`,
+      p => `${sname(p)} on kärkikolmikon vakiintunut jäsen. Tasainen, kokenut, vaikea ohittaa.`,
+      p => `Tarkkaile ${sname(p)}:tä. Kokenut pelaaja, joka osaa kerätä pisteet sieltä mistä ne tulevat.`,
+    ]
+  ];
+
+  const debytTexts = [
+    p => `${sname(p)} astuu kentälle ensimmäistä kertaa. Ilman datahistoriaa haastaja on täysi arvoitus – ja arvoitukset pitää pelata auki.`,
+    p => `${sname(p)} tekee kauden debyytin. Tarkkaile etenkin alkukierroksilla: uudet nimet osaavat yllättää ennen kuin muut ehtivät sopeutua.`,
+    p => `Ensimmäinen Peikot-turnaus odottaa ${sname(p)}:tä. Historia ei anna dataa ennakointiin – mutta padel-historia kirjoitetaan tänään.`,
+  ];
+
+  const setupTemplates = [
+    `Americano pitää jokaisen pelaajan varpaillaan: parit vaihtuvat kierros kierrokselta, ja yhdessä kierroksessa voitettu johtoasema voidaan menettää seuraavassa. Formaatti suosii tasaista suorittajaa, ei yksittäistä tähteä.`,
+    `Tänään ei ole varaa jättää ainuttakaan kierrosta väliin – jokainen ottelu on pistejahti. Americano-formaatti tekee jokaisen tilanteen omanlaisekseen, ja tilastosuosikit osaavat sen.`,
+    `Historian perusteella ennakoidaan, mutta padel heittää aina yllätyksensä. Vaihtuvat parit tarkoittavat, että jokainen pelaaja kohtaa kaikki – ja se tasoittaa lähtöasetelmia merkittävästi.`,
+  ];
+
+  let html = `
+    <div class="preview-headline">${esc(tourName)}: Kuka vie voiton tänään?</div>
+    <div class="preview-byline">ENNAKKO&nbsp;&middot;&nbsp;${esc(displayDate)}&nbsp;&middot;&nbsp;Peikot Padel Tour 2026</div>
+    <p class="preview-text">${pick(introTemplates)()}</p>`;
+
+  if (veteransSorted.length > 0) {
+    const favCount = Math.min(3, veteransSorted.length);
+    const favs = veteransSorted.slice(0, favCount);
+    const others = veteransSorted.slice(favCount);
+    const badges = ['SUOSIKKI', 'HAASTAJA', 'SEURATTAVA'];
+
+    html += `<div class="preview-section-title">Ennakkosuosikit</div>`;
+    favs.forEach((p, i) => {
+      const s = statsMap[p];
+      const descFn = pick(favTemplates[i] || favTemplates[2]);
+      const desc = descFn(p);
+      const lastPos = s.lastTourPos ? `, ${s.lastTourPos}.&nbsp;viimeksi&nbsp;(${esc(s.lastTourName)})` : '';
+      html += `<div class="preview-player-row">
+        <div class="preview-player-name">${esc(p)}&nbsp;<span class="preview-badge preview-badge-fav">${badges[i]}</span></div>
+        <div class="preview-player-note">${desc}</div>
+        <div class="preview-player-stats">${s.wins}V&ndash;${s.losses}H&nbsp;&middot;&nbsp;${s.avgPts.toFixed(1)}&nbsp;pist./ott.&nbsp;&middot;&nbsp;${s.matches}&nbsp;ott.${lastPos}</div>
+      </div>`;
+    });
+
+    if (others.length > 0) {
+      html += `<div class="preview-section-title">Muut haastajat</div>`;
+      others.forEach(p => {
+        const s = statsMap[p];
+        const lastPos = s.lastTourPos ? `${s.lastTourPos}.&nbsp;sijalla viimeksi&nbsp;(${esc(s.lastTourName)})` : 'mukana haastamassa';
+        html += `<div class="preview-player-row">
+          <div class="preview-player-name">${esc(p)}</div>
+          <div class="preview-player-note">${lastPos}</div>
+          <div class="preview-player-stats">${s.wins}V&ndash;${s.losses}H&nbsp;&middot;&nbsp;${s.avgPts.toFixed(1)}&nbsp;pist./ott.&nbsp;&middot;&nbsp;${s.matches}&nbsp;ott.</div>
+        </div>`;
+      });
+    }
+  }
+
+  if (debuts.length > 0) {
+    html += `<div class="preview-section-title">Debytantit</div>`;
+    debuts.forEach(p => {
+      const desc = pick(debytTexts)(p);
+      html += `<div class="preview-player-row">
+        <div class="preview-player-name">${esc(p)}&nbsp;<span class="preview-badge preview-badge-debut">DEBYYTTI</span></div>
+        <div class="preview-player-note">${desc}</div>
+        <div class="preview-player-stats">0&nbsp;ott.</div>
+      </div>`;
+    });
+  }
+
+  html += `<p class="preview-text" style="margin-top:16px;">${pick(setupTemplates)}</p>`;
+  html += `<div class="preview-footer">&#9881;&nbsp;Generoitu automaattisesti Peikot Padel Tour 2026 -tilastojen pohjalta&nbsp;&middot;&nbsp;${esc(displayDate)}</div>`;
+  return html;
+}
+
+function renderPreview() {
+  const bodyEl = document.getElementById('preview-body');
+  const summaryEl = document.querySelector('#preview-section summary');
+  if (!bodyEl) return;
+  const { meta } = tourData;
+  let displayDate = meta.date || '';
+  if (displayDate.length === 10 && displayDate.includes('-')) {
+    const [y, mo, d] = displayDate.split('-');
+    displayDate = `${d}.${mo}.${y}`;
+  }
+  if (summaryEl) summaryEl.innerHTML = `<span class="preview-arrow">&#9658;</span>&nbsp;&#128240;&nbsp;Ennakko &mdash; ${esc(meta.name)}`;
+  if (!histData) {
+    bodyEl.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace; font-size:0.8rem; color:var(--ink3); padding:16px 0;">Historiadataa ei saatavilla.</div>';
+    return;
+  }
+  const statsMap = computePlayerStats(meta.players, histData);
+  bodyEl.innerHTML = generatePreviewHTML(meta.name, displayDate, meta.players, statsMap);
+}
+
 function renderLive() {
   const { meta, schedule, scores } = tourData;
   document.getElementById('tour-title').textContent = meta.name;
@@ -811,6 +1121,7 @@ function renderLive() {
   document.getElementById('share-url').textContent = location.href;
   renderRounds(schedule, scores || {});
   renderStandings(scores || {});
+  renderPreview();
 }
 
 function setupScoresListener(id) {

@@ -1044,8 +1044,30 @@ function copyShare() {
 }
 
 // ============================================================
-// SCHEDULE – K_{2n} 1-factorization
+// SCHEDULE – K_{2n} 1-factorization + optimised court pairing
+// Taataan: jokainen pelaa kumppanina jokaisen kanssa tasan kerran (1-faktorisointi).
+// Optimoidaan: kenttäpariutus minimoi vastustajatoistumia kierros kerrallaan,
+// jolloin myös "jokainen kohtaa jokaisen vastustajana" jakautuu niin tasaisesti
+// kuin formaatti geometrisesti sallii (n=8 ja n=12: ideaali on 2 kertaa per pari).
 // ============================================================
+
+// Palauttaa kaikki tavat jakaa `pairs`-lista kentiksi (kukin kenttä = { a, b }).
+// Esim. 4 paria → 3 vaihtoehtoa; 6 paria → 15 vaihtoehtoa.
+function getAllCourtPairings(pairs) {
+  if (pairs.length === 0) return [[]];
+  const first = pairs[0];
+  const rest = pairs.slice(1);
+  const result = [];
+  for (let i = 0; i < rest.length; i++) {
+    const partner = rest[i];
+    const remaining = rest.filter((_, idx) => idx !== i);
+    for (const sub of getAllCourtPairings(remaining)) {
+      result.push([{ a: first, b: partner }, ...sub]);
+    }
+  }
+  return result;
+}
+
 function buildSchedule(players) {
   const ps = [...players];
   for (let i = ps.length - 1; i > 0; i--) {
@@ -1055,14 +1077,40 @@ function buildSchedule(players) {
   const n = ps.length;
   const fixed = ps[n - 1];
   const rot = ps.slice(0, n - 1);
+
+  // Laskuri: kuinka monta kertaa kaksi pelaajaa on kohdannut vastustajana
+  const faced = {};
+  const faceKey = (a, b) => a < b ? a + '\x00' + b : b + '\x00' + a;
+  const getFaced = (a, b) => faced[faceKey(a, b)] || 0;
+
   const rounds = [];
   for (let r = 0; r < n - 1; r++) {
+    // Rakenna parit tältä kierrokselta (1-faktorisointi — kumppanijakautuma pysyy täydellisenä)
     const pairs = [];
     pairs.push([fixed, rot[0]]);
     for (let i = 1; i <= (n - 2) / 2; i++) pairs.push([rot[i], rot[n - 1 - i]]);
-    const courts = [];
-    for (let i = 0; i < pairs.length; i += 2) courts.push({ a: pairs[i], b: pairs[i + 1] });
-    rounds.push({ round: r + 1, courts });
+
+    // Valitse kenttäpariutus joka minimoi vastustajatoistumien summan
+    const allPairings = getAllCourtPairings(pairs);
+    let bestScore = Infinity;
+    let bestCourts = allPairings[0];
+    for (const pairing of allPairings) {
+      let score = 0;
+      for (const { a, b } of pairing) {
+        for (const pa of a) for (const pb of b) score += getFaced(pa, pb);
+      }
+      if (score < bestScore) { bestScore = score; bestCourts = pairing; }
+    }
+
+    // Rekisteröi tämän kierroksen vastustajakohtaamiset
+    for (const { a, b } of bestCourts) {
+      for (const pa of a) for (const pb of b) {
+        const k = faceKey(pa, pb);
+        faced[k] = (faced[k] || 0) + 1;
+      }
+    }
+
+    rounds.push({ round: r + 1, courts: bestCourts });
     rot.unshift(rot.pop());
   }
   return rounds;

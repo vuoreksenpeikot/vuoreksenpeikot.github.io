@@ -324,6 +324,11 @@ footer a:hover{text-decoration:underline}
   <div class="detail-panel" id="detailPanel"></div>
 </div>
 
+<!-- TOURNAMENT REPORT OVERLAY -->
+<div class="detail-overlay" id="reportOverlay">
+  <div class="detail-panel" id="reportPanel"></div>
+</div>
+
 <button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Takaisin ylös">↑</button>
 
 <footer>
@@ -359,7 +364,10 @@ function renderRecentActivity(){
     return`<div onclick="showTourDetail(${ti})" style="flex-shrink:0;width:280px;background:var(--card);border:${isLatest?'2px solid var(--border2)':'1px solid var(--border)'};border-radius:10px;padding:22px 24px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;box-shadow:${isLatest?'0 4px 16px rgba(0,80,30,0.13)':'0 1px 4px rgba(0,0,0,0.06)'}" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,80,30,0.15)'" onmouseout="this.style.transform='';this.style.boxShadow='${isLatest?'0 4px 16px rgba(0,80,30,0.13)':'0 1px 4px rgba(0,0,0,0.06)'}'">
       ${isLatest?`<div style="position:absolute;top:14px;right:14px;background:var(--green);color:white;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:3px 8px;border-radius:4px">UUSIN</div>`:''}
       <div style="display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.5px;color:${isLatest?'var(--green-bright)':'var(--ink2)'};background:${isLatest?'rgba(15,112,40,0.12)':'rgba(78,138,100,0.10)'};border:1px solid ${isLatest?'rgba(15,112,40,0.22)':'rgba(78,138,100,0.18)'};border-radius:999px;padding:6px 10px;margin-bottom:10px">${tour.date}</div>
-      <div style="font-size:20px;font-weight:800;color:var(--white);margin-bottom:16px;line-height:1.1;padding-right:${isLatest?'52px':'0'}">${tour.name}</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <div style="font-size:20px;font-weight:800;color:var(--white);line-height:1.1;flex:1">${tour.name}</div>
+        <button onclick="event.stopPropagation();openTournamentReport(${ti})" style="flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;padding:5px 10px;border:1px solid var(--border2);background:rgba(15,112,40,0.10);color:var(--green-bright);border-radius:5px;cursor:pointer;white-space:nowrap;transition:all .15s" onmouseover="this.style.background='rgba(15,112,40,0.20)'" onmouseout="this.style.background='rgba(15,112,40,0.10)'">📊 Raportti</button>
+      </div>
       <div style="background:${isLatest?'rgba(15,112,40,0.07)':'var(--bg)'};border-radius:8px;padding:12px 14px;margin-bottom:0">
         <div style="font-size:11px;color:var(--ink2);margin-bottom:4px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px">Turnausvoittaja</div>
         <div style="font-size:18px;font-weight:800;color:var(--green-bright)">🏆 ${w}</div>
@@ -437,7 +445,7 @@ function renderH2H(p1,p2){
 
 // TOURNAMENTS
 function renderTournaments(){
-  document.getElementById('tourGrid').innerHTML=TOURS.map((tour,ti)=>{const w=getTourWinner(ti);const tM=M.filter(m=>m.t===ti);const n=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))].length;return`<div class="tour-card" onclick="showTourDetail(${ti})"><div class="tour-num">${tour.id}</div><div class="tour-name">${tour.name}</div><div class="tour-date">${tour.date} · ${n} pelaajaa</div><div class="tour-winner">🏆 <b>${w}</b></div></div>`}).join('');
+  document.getElementById('tourGrid').innerHTML=TOURS.map((tour,ti)=>{const w=getTourWinner(ti);const tM=M.filter(m=>m.t===ti);const n=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))].length;return`<div class="tour-card" onclick="showTourDetail(${ti})"><div class="tour-num">${tour.id}</div><div class="tour-name">${tour.name}</div><div class="tour-date">${tour.date} · ${n} pelaajaa</div><div class="tour-winner">🏆 <b>${w}</b></div><div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px"><button onclick="event.stopPropagation();openTournamentReport(${ti})" style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;padding:6px 12px;border:1px solid var(--border2);background:rgba(15,112,40,0.08);color:var(--green-bright);border-radius:5px;cursor:pointer;width:100%;transition:all .15s" onmouseover="this.style.background='rgba(15,112,40,0.18)'" onmouseout="this.style.background='rgba(15,112,40,0.08)'">📊 Raportti</button></div></div>`}).join('');
 }
 function showTourDetail(ti){
   const tM=M.filter(m=>m.t===ti);const tour=TOURS[ti];const tP=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))];
@@ -527,7 +535,203 @@ function filterPlayerMatches(filter,btn){
 }
 function closePlayer(){document.getElementById('detailOverlay').classList.remove('open');document.body.style.overflow=''}
 document.getElementById('detailOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closePlayer()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer()});
+function closeReport(){document.getElementById('reportOverlay').classList.remove('open');document.body.style.overflow=''}
+document.getElementById('reportOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeReport()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePlayer();closeReport()}});
+
+// TOURNAMENT REPORT
+function openTournamentReport(ti){
+  const tour=TOURS[ti];
+  const tM=M.filter(m=>m.t===ti);
+  const tP=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))];
+
+  // standings
+  const standings=tP.map(p=>{
+    const ms=tM.filter(m=>pIn(m,p));
+    const pts=ms.reduce((a,m)=>a+myS(m,p),0);
+    const conc=ms.reduce((a,m)=>a+opS(m,p),0);
+    const w=ms.filter(m=>res(m,p)==='W').length;
+    const l=ms.filter(m=>res(m,p)==='L').length;
+    const t=ms.filter(m=>res(m,p)==='T').length;
+    return{name:p,pts,conc,diff:pts-conc,w,l,t,matches:ms.length};
+  }).sort((a,b)=>b.pts-a.pts);
+
+  // tiukin ottelu
+  // suurin voitto
+  const bigM=tM.reduce((best,m)=>{const d=Math.abs(m.sa-m.sb);return d>best.d?{m,d}:best},{m:null,d:-1}).m;
+  // paras parivaljakko – voittanut pari suurimmalla marginaalilla
+  const bestPairM=tM.filter(m=>m.sa!==m.sb).reduce((best,m)=>{
+    const d=Math.abs(m.sa-m.sb);
+    if(d>best.d)return{m,d,pair:m.sa>m.sb?m.a:m.b};
+    return best;
+  },{m:null,d:-1,pair:null});
+  // tasaisin (lähinnä 16 per ottelu)
+  const steadiest=standings.map(s=>({name:s.name,avg:s.pts/s.matches,dist:Math.abs(s.pts/s.matches-16)})).sort((a,b)=>a.dist-b.dist)[0];
+  // comeback – sijoitusparannus puolivälierästä loppuun
+  const rounds=[...new Set(tM.map(m=>m.r))].sort((a,b)=>a-b);
+  const midR=rounds[Math.floor((rounds.length-1)/2)];
+  const standingsMid=tP.map(p=>{
+    const ms=tM.filter(m=>m.r<=midR&&pIn(m,p));
+    if(!ms.length)return null;
+    const pts=ms.reduce((a,m)=>a+myS(m,p),0);
+    return{name:p,pts};
+  }).filter(Boolean).sort((a,b)=>b.pts-a.pts);
+  const comebackPlayer=tP.map(p=>{
+    const midRank=standingsMid.findIndex(x=>x.name===p)+1;
+    const finalRank=standings.findIndex(x=>x.name===p)+1;
+    if(!midRank||!finalRank)return null;
+    return{name:p,midRank,finalRank,gain:midRank-finalRank};
+  }).filter(Boolean).sort((a,b)=>b.gain-a.gain)[0];
+  // ELO-muutokset tässä turnauksessa
+  const eloBeforeMap={};
+  const eloAfterMap={};
+  tP.forEach(p=>{
+    eloBeforeMap[p]=(ti>0?(ELO_HISTORY[p]||[]).find(h=>h.ti===ti-1)?.elo:undefined)??1000;
+    eloAfterMap[p]=(ELO_HISTORY[p]||[]).find(h=>h.ti===ti)?.elo??ELO_RATINGS[p]??1000;
+  });
+  const eloDeltas=tP.map(p=>({name:p,delta:eloAfterMap[p]-eloBeforeMap[p],before:eloBeforeMap[p],after:eloAfterMap[p]})).sort((a,b)=>b.delta-a.delta);
+  const eloWinner=eloDeltas[0];
+  const eloLoser=eloDeltas[eloDeltas.length-1];
+  // yllätysvoitto – heikompi tiimi (ELO ennen turnausta) voitti, suurin ratingero
+  const upsetM=tM.filter(m=>m.sa!==m.sb).map(m=>{
+    const eloA=m.a.reduce((s,p)=>s+(eloBeforeMap[p]??1000),0)/m.a.length;
+    const eloB=m.b.reduce((s,p)=>s+(eloBeforeMap[p]??1000),0)/m.b.length;
+    const aWon=m.sa>m.sb;
+    const winnerElo=aWon?eloA:eloB;
+    const loserElo=aWon?eloB:eloA;
+    const gap=loserElo-winnerElo; // positiivinen = heikompi voitti
+    return{m,gap,winnerElo,loserElo,winner:aWon?m.a:m.b,loser:aWon?m.b:m.a};
+  }).filter(x=>x.gap>0).sort((a,b)=>b.gap-a.gap)[0]||null;
+
+  // Giant Killer – pelaaja joka voitti suurimmalla ELO-tappiolla yksittäisessä ottelussa
+  const giantKiller=tP.map(p=>{
+    const wins=tM.filter(m=>m.sa!==m.sb&&pIn(m,p)&&res(m,p)==='W');
+    if(!wins.length)return null;
+    const best=wins.map(m=>{
+      const myTeam=pTeam(m,p)==='a'?m.a:m.b;
+      const oppTeam=pTeam(m,p)==='a'?m.b:m.a;
+      const myElo=myTeam.reduce((s,x)=>s+(eloBeforeMap[x]??1000),0)/myTeam.length;
+      const oppElo=oppTeam.reduce((s,x)=>s+(eloBeforeMap[x]??1000),0)/oppTeam.length;
+      return{m,gap:oppElo-myElo,myElo,oppElo};
+    }).sort((a,b)=>b.gap-a.gap)[0];
+    return{name:p,...best};
+  }).filter(x=>x&&x.gap>0).sort((a,b)=>b.gap-a.gap)[0]||null;
+
+  // Ennuste vs. tulos – kuka ylitti/alitti ELO-odotuksensa eniten
+  const expectedVsActual=tP.map(p=>{
+    const ms=tM.filter(m=>pIn(m,p));
+    if(!ms.length)return null;
+    let expW=0;
+    ms.forEach(m=>{
+      const myTeam=pTeam(m,p)==='a'?m.a:m.b;
+      const oppTeam=pTeam(m,p)==='a'?m.b:m.a;
+      const myElo=myTeam.reduce((s,x)=>s+(eloBeforeMap[x]??1000),0)/myTeam.length;
+      const oppElo=oppTeam.reduce((s,x)=>s+(eloBeforeMap[x]??1000),0)/oppTeam.length;
+      expW+=1/(1+Math.pow(10,(oppElo-myElo)/400));
+    });
+    const actW=ms.filter(m=>res(m,p)==='W').length;
+    return{name:p,actW,expW,diff:actW-expW,matches:ms.length};
+  }).filter(Boolean).sort((a,b)=>b.diff-a.diff);
+  const overPerformer=expectedVsActual.length&&expectedVsActual[0].diff>0.3?expectedVsActual[0]:null;
+  const underPerformer=expectedVsActual.length&&expectedVsActual[expectedVsActual.length-1].diff<-0.3?expectedVsActual[expectedVsActual.length-1]:null;
+
+  // historiset vertailut (vain aiempiin turnauksiin, ti>0)
+  const hasHistory=ti>0;
+  let personalBests=[];
+  let outlierUp=null,outlierDown=null;
+  let allTimeRecords={};
+  if(hasHistory){
+    // henk. ennätykset – vain aiemmista turnauksista (tii < ti)
+    tP.forEach(p=>{
+      const prevPts=TOURS.slice(0,ti).map((_,tii)=>{
+        const ms=M.filter(m=>m.t===tii&&pIn(m,p));
+        if(!ms.length)return null;
+        return ms.reduce((a,m)=>a+myS(m,p),0);
+      }).filter(x=>x!==null);
+      if(!prevPts.length)return;
+      const thisPts=standings.find(x=>x.name===p)?.pts||0;
+      if(thisPts>Math.max(...prevPts))personalBests.push({name:p,pts:thisPts,prev:Math.max(...prevPts)});
+    });
+    // yllätykset – poikkeama omasta aiempien turnausten keskiarvosta
+    const diffs=tP.map(p=>{
+      const prevMs=M.filter(m=>m.t<ti&&pIn(m,p));
+      if(prevMs.length<2)return null;
+      const prevAvg=prevMs.reduce((a,m)=>a+myS(m,p),0)/prevMs.length;
+      const thisPts=standings.find(x=>x.name===p)?.pts||0;
+      const thisMs=tM.filter(m=>pIn(m,p));
+      if(!thisMs.length)return null;
+      const thisAvg=thisPts/thisMs.length;
+      return{name:p,thisAvg,prevAvg,diff:thisAvg-prevAvg};
+    }).filter(Boolean).sort((a,b)=>b.diff-a.diff);
+    if(diffs.length)outlierUp=diffs[0];
+    if(diffs.length>1)outlierDown=diffs[diffs.length-1];
+    // turnausennätykset – vain aiemmissa turnauksissa (tii < ti)
+    const prevM=M.filter(m=>m.t<ti);
+    const prevBigMargins=prevM.map(m=>Math.abs(m.sa-m.sb));
+    const thisBig=bigM?Math.abs(bigM.sa-bigM.sb):0;
+    allTimeRecords.biggestEver=prevBigMargins.length&&thisBig>Math.max(...prevBigMargins);
+    const prevTourTotals=TOURS.slice(0,ti).map((_,tii)=>M.filter(m=>m.t===tii).reduce((s,m)=>s+m.sa+m.sb,0));
+    const thisTotal=tM.reduce((s,m)=>s+m.sa+m.sb,0);
+    allTimeRecords.highestScoring=prevTourTotals.length>0&&thisTotal>Math.max(...prevTourTotals);
+  }
+
+  // renderöi HTML
+  const rankMedal=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':''
+  const standingsHtml=standings.map((s,i)=>{
+    const diffStr=s.diff>0?'+'+s.diff:s.diff;
+    const diffCol=s.diff>0?'var(--green-bright)':s.diff<0?'var(--red)':'var(--ink3)';
+    return`<tr><td style="font-weight:700;font-family:'JetBrains Mono',monospace">${i+1}${rankMedal(i)}</td><td style="font-weight:700">${esc(s.name)}</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;color:var(--green-bright)">${s.w}</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;color:var(--red)">${s.l}</td><td style="text-align:right;font-family:'JetBrains Mono',monospace">${s.pts}</td><td style="text-align:right;font-family:'JetBrains Mono',monospace;color:${diffCol}">${diffStr}</td></tr>`;
+  }).join('');
+
+  const matchRow=m=>{
+    const d=m.sa-m.sb;
+    const win=d>0?m.a:d<0?m.b:null;
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="flex:1;font-weight:700">${m.a.join(' & ')}</div><div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;white-space:nowrap"><span style="color:${m.sa>=m.sb?'var(--green-bright)':'var(--red)'}">${m.sa}</span> – <span style="color:${m.sb>=m.sa?'var(--green-bright)':'var(--red)'}">${m.sb}</span></div><div style="flex:1;text-align:right;font-weight:700">${m.b.join(' & ')}</div></div>`;
+  };
+
+  const rCard=(icon,title,body)=>
+    `<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px 20px;box-shadow:0 1px 4px rgba(0,0,0,0.07)"><div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">${icon} ${title}</div>${body}</div>`;
+
+  let historySection='';
+  if(hasHistory){
+    let histCards='';
+    if(personalBests.length){
+      const names=personalBests.map(x=>`<b>${esc(x.name)}</b> (${x.pts} p, ennen max ${x.prev} p)`).join(', ');
+      histCards+=rCard('🌟','Henkilökohtaiset ennätykset',`<div style="font-size:14px;color:var(--ink)">${names}</div>`);
+    }
+    if(outlierUp&&outlierUp.diff>0.5){
+      histCards+=rCard('📈','Paras yllätys',`<div style="font-size:15px;font-weight:800">${esc(outlierUp.name)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green-bright)">+${outlierUp.diff.toFixed(1)} p/ottelu yli oman keskiarvon (tänään ${outlierUp.thisAvg.toFixed(1)}, norm. ${outlierUp.prevAvg.toFixed(1)})</div>`);
+    }
+    if(outlierDown&&outlierDown.diff<-0.5){
+      histCards+=rCard('📉','Pahin pettymys',`<div style="font-size:15px;font-weight:800">${esc(outlierDown.name)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--red)">${outlierDown.diff.toFixed(1)} p/ottelu alle oman keskiarvon (tänään ${outlierDown.thisAvg.toFixed(1)}, norm. ${outlierDown.prevAvg.toFixed(1)})</div>`);
+    }
+    const flags=[];
+    if(allTimeRecords.highestScoring)flags.push('🔝 Kaikkien aikojen pisteisin turnaus!');
+    if(allTimeRecords.biggestEver)flags.push('💥 Kaikkien aikojen suurin voittomarginaali!');
+    if(flags.length)histCards+=rCard('🎰','Turnausennätykset',`<div style="display:flex;flex-direction:column;gap:6px">${flags.map(f=>`<div style="font-size:14px;font-weight:700;color:var(--accent)">${f}</div>`).join('')}</div>`);
+    if(histCards)historySection=`<div class="sub-title" style="margin-top:24px">Historiavertailu</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">${histCards}</div>`;
+  }
+
+  document.getElementById('reportPanel').innerHTML=`
+    <button class="detail-close" onclick="closeReport()">✕</button>
+    <div class="detail-name">${esc(tour.name)}</div>
+    <div class="detail-sub">${tour.date} · ${tP.length} pelaajaa · ${tM.length} ottelua</div>
+    <div class="sub-title">Sijoitukset</div>
+    <table class="lb-table" style="margin-bottom:20px"><thead><tr><th>#</th><th>Pelaaja</th><th class="r">V</th><th class="r">H</th><th class="r">P+</th><th class="r">+/-</th></tr></thead><tbody>${standingsHtml}</tbody></table>
+    <div class="sub-title">Ottelutilastot</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:4px">
+      ${bigM?rCard('💥','Suurin voitto',matchRow(bigM)+`<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2);margin-top:6px">Marginaali: ${Math.abs(bigM.sa-bigM.sb)} pistettä</div>`):''}
+      ${steadiest?rCard('⚖️','Tasaisin pelaaja',`<div style="font-size:15px;font-weight:800">${esc(steadiest.name)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2)">${steadiest.avg.toFixed(1)} p/ottelu — ${Math.abs(steadiest.avg-16).toFixed(1)} poikkeama 16:sta</div>`):''}
+      ${comebackPlayer&&comebackPlayer.gain>0?rCard('📈','Comeback',`<div style="font-size:15px;font-weight:800">${esc(comebackPlayer.name)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green-bright)">Sija ${comebackPlayer.midRank} → ${comebackPlayer.finalRank} (+${comebackPlayer.gain} sijaa)</div>`):''}
+      ${eloWinner&&eloWinner.delta>0?rCard('📈','Eniten ratingia voitti',`<div style="font-size:15px;font-weight:800">${esc(eloWinner.name)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green-bright)">+${eloWinner.delta} pistettä (${eloWinner.before} → ${eloWinner.after})</div>`):''}
+      ${eloLoser&&eloLoser.delta<0?rCard('📉','Eniten ratingia menetti',`<div style="font-size:15px;font-weight:800">${esc(eloLoser.name)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--red)">${eloLoser.delta} pistettä (${eloLoser.before} → ${eloLoser.after})</div>`):''}
+      ${upsetM?rCard('🎯','Yllätysvoitto',`<div style="font-size:15px;font-weight:800">${upsetM.winner.map(esc).join(' & ')}</div>`+matchRow(upsetM.m)+`<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2);margin-top:6px">Voitti +${Math.round(upsetM.gap)} ratingpisteen edeltä (${Math.round(upsetM.winnerElo)} vs ${Math.round(upsetM.loserElo)})</div>`):''}
+    </div>
+    ${historySection}
+  `;
+  document.getElementById('reportOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
 
 // NAV
 document.querySelectorAll('.nav a').forEach(a=>{a.addEventListener('click',()=>{document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));a.classList.add('active')})});

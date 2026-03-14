@@ -875,10 +875,9 @@ function openScorePicker(btn) {
   pickerTarget = btn;
   const currentVal = btn.dataset.value !== '' ? parseInt(btn.dataset.value) : null;
 
-  // order: 17, 18 … 32, 16, 15 … 0
+  // order: 0–32 (looginen järjestys)
   const nums = [];
-  for (let i = 17; i <= 32; i++) nums.push(i);
-  for (let i = 16; i >= 0; i--) nums.push(i);
+  for (let i = 0; i <= 32; i++) nums.push(i);
 
   const overlay = document.createElement('div');
   overlay.id = 'score-picker-overlay';

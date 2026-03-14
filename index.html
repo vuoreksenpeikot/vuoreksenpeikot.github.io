@@ -351,7 +351,7 @@ function renderRecentActivity(){
       </div>
     </div>`;
   }).join('');
-  document.getElementById('recentActivity').innerHTML=`<div class="sec-label" style="margin-bottom:12px">Viimeisimmät pelit</div><div class="h-scroll">${tourCards}</div>`;
+  document.getElementById('recentActivity').innerHTML=`<div class="sec-label" style="margin-bottom:12px">Viimeisimmät turnaukset</div><div class="h-scroll">${tourCards}</div>`;
 }
 
 // AWARDS
@@ -560,7 +560,7 @@ function renderElo(){
   const tableHtml=`<table class="lb-table"><thead><tr><th>#</th><th>Pelaaja</th><th class="r">Rating</th><th class="r">+/-</th><th class="lb-bar-cell">Taso</th></tr></thead><tbody>${display.map((s,i)=>{const barW=maxElo>minElo?((s.elo-minElo)/(maxElo-minElo)*100).toFixed(1):50;const diffStr=(s.diff>0?'+':'')+s.diff;const diffCol=s.diff>0?'var(--green-bright)':s.diff<0?'var(--red)':'var(--ink3)';return`<tr onclick="openPlayer('${s.name}')"><td class="lb-rank">${i+1}</td><td class="lb-name">${s.name}</td><td class="r" style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700">${s.elo}</td><td class="r" style="color:${diffCol};font-weight:600">${diffStr}</td><td class="lb-bar-cell"><div class="lb-bar-wrap"><div style="height:100%;width:${barW}%;background:${s.diff>=0?'var(--green)':'var(--red)'};border-radius:4px"></div></div></td></tr>`;}).join('')}</tbody></table>${sorted.length>10?`<div style="text-align:center;margin-top:20px"><button onclick="eloShowAll=!eloShowAll;renderElo()" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:10px 20px;border:1px solid var(--border);background:var(--card);color:var(--ink);border-radius:6px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--border2)';this.style.background='var(--card2)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">${eloShowAll?'Piilota':'Näytä kaikki'} (${sorted.length})</button></div>`:''}`;
 
 
-  const eloExplainer=`<div style="margin-bottom:20px">
+  const eloExplainer=`<div style="margin-top:24px;margin-bottom:20px">
     <button onclick="var b=document.getElementById('eloExplainerBox');var open=b.style.display!=='none';b.style.display=open?'none':'grid';this.textContent=open?'Miten pisteytys toimii? ▾':'Piilota selitys ▴'" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:8px 16px;border:1px solid var(--border);background:var(--card);color:var(--ink2);border-radius:6px;cursor:pointer;transition:all .15s;letter-spacing:.5px" onmouseover="this.style.borderColor='var(--border2)';this.style.background='var(--card2)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">Miten pisteytys toimii? ▾</button>
     <div id="eloExplainerBox" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin-top:10px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">
       <div>

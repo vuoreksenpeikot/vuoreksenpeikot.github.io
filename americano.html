@@ -560,30 +560,42 @@
     }
     .preview-player-row {
       display: flex;
-      align-items: baseline;
-      gap: 10px;
-      padding: 8px 0;
+      flex-direction: column;
+      gap: 5px;
+      padding: 12px 0;
       border-bottom: 1px solid rgba(0,80,30,0.1);
     }
     .preview-player-row:last-of-type { border-bottom: none; }
     .preview-player-name {
       font-weight: 800;
-      font-size: 0.93rem;
-      min-width: 90px;
-      flex-shrink: 0;
-    }
-    .preview-player-stats {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--ink3);
-      white-space: nowrap;
-      flex-shrink: 0;
+      font-size: 0.95rem;
     }
     .preview-player-note {
-      font-size: 0.83rem;
+      font-size: 0.84rem;
       color: var(--ink2);
-      flex: 1;
-      line-height: 1.4;
+      line-height: 1.55;
+    }
+    .preview-stat-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 3px;
+    }
+    .preview-stat-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.67rem;
+      font-weight: 600;
+      color: var(--ink3);
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 7px;
+      white-space: nowrap;
+    }
+    .preview-stat-chip.chip-highlight {
+      background: rgba(26,138,52,0.09);
+      border-color: rgba(26,138,52,0.25);
+      color: var(--green-bright);
     }
     .preview-badge {
       display: inline-block;
@@ -620,9 +632,6 @@
       .known-chip { padding: 10px 16px; font-size: 14px; }
       .btn { min-height: 44px; }
       .score-btn { width: 62px; height: 52px; font-size: 1.25rem; }
-      .preview-player-row { flex-wrap: wrap; gap: 6px; }
-      .preview-player-note { min-width: 100%; order: 3; }
-      .preview-player-stats { order: 2; }
       .preview-body { padding: 0 16px 20px; }
     }
   </style>
@@ -987,6 +996,15 @@ function computePlayerStats(players, histData) {
   return stats;
 }
 
+function statChips(s) {
+  const chips = [];
+  chips.push(`<span class="preview-stat-chip">${s.matches} ottelua</span>`);
+  chips.push(`<span class="preview-stat-chip chip-highlight">${s.wins}&ndash;${s.losses}</span>`);
+  chips.push(`<span class="preview-stat-chip">snitt ${s.avgPts.toFixed(1)}</span>`);
+  if (s.lastTourPos) chips.push(`<span class="preview-stat-chip">#${s.lastTourPos} ${esc(s.lastTourName)}</span>`);
+  return `<div class="preview-stat-chips">${chips.join('')}</div>`;
+}
+
 function generatePreviewHTML(tourName, displayDate, players, statsMap) {
   const n = players.length;
   const veterans = players.filter(p => !statsMap[p].isDebut);
@@ -1054,11 +1072,10 @@ function generatePreviewHTML(tourName, displayDate, players, statsMap) {
       const s = statsMap[p];
       const descFn = pick(favTemplates[i] || favTemplates[2]);
       const desc = descFn(p);
-      const lastPos = s.lastTourPos ? `, ${s.lastTourPos}.&nbsp;viimeksi&nbsp;(${esc(s.lastTourName)})` : '';
-      html += `<div class="preview-player-row">
+        html += `<div class="preview-player-row">
         <div class="preview-player-name">${esc(p)}&nbsp;<span class="preview-badge preview-badge-fav">${badges[i]}</span></div>
         <div class="preview-player-note">${desc}</div>
-        <div class="preview-player-stats">${s.wins}V&ndash;${s.losses}H&nbsp;&middot;&nbsp;${s.avgPts.toFixed(1)}&nbsp;pist./ott.&nbsp;&middot;&nbsp;${s.matches}&nbsp;ott.${lastPos}</div>
+        ${statChips(s)}
       </div>`;
     });
 
@@ -1066,11 +1083,11 @@ function generatePreviewHTML(tourName, displayDate, players, statsMap) {
       html += `<div class="preview-section-title">Muut haastajat</div>`;
       others.forEach(p => {
         const s = statsMap[p];
-        const lastPos = s.lastTourPos ? `${s.lastTourPos}.&nbsp;sijalla viimeksi&nbsp;(${esc(s.lastTourName)})` : 'mukana haastamassa';
+        const lastPosNote = s.lastTourPos ? `${s.lastTourPos}. sija viimeksi (${esc(s.lastTourName)})` : 'mukana haastamassa';
         html += `<div class="preview-player-row">
           <div class="preview-player-name">${esc(p)}</div>
-          <div class="preview-player-note">${lastPos}</div>
-          <div class="preview-player-stats">${s.wins}V&ndash;${s.losses}H&nbsp;&middot;&nbsp;${s.avgPts.toFixed(1)}&nbsp;pist./ott.&nbsp;&middot;&nbsp;${s.matches}&nbsp;ott.</div>
+          <div class="preview-player-note">${lastPosNote}</div>
+          ${statChips(s)}
         </div>`;
       });
     }
@@ -1083,7 +1100,7 @@ function generatePreviewHTML(tourName, displayDate, players, statsMap) {
       html += `<div class="preview-player-row">
         <div class="preview-player-name">${esc(p)}&nbsp;<span class="preview-badge preview-badge-debut">DEBYYTTI</span></div>
         <div class="preview-player-note">${desc}</div>
-        <div class="preview-player-stats">0&nbsp;ott.</div>
+        <div class="preview-stat-chips"><span class="preview-stat-chip">0 ottelua</span></div>
       </div>`;
     });
   }

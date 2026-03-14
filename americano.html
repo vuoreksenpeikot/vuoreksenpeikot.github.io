@@ -270,39 +270,59 @@
     .standings-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
     .standings-table th {
       font-family: 'JetBrains Mono', monospace;
-      text-align: left;
-      padding: 8px 10px;
+      text-align: right;
+      padding: 8px 8px;
       color: var(--ink2);
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 1.5px;
       border-bottom: 1px solid var(--border);
     }
-    .standings-table td { padding: 10px 10px; border-bottom: 1px solid rgba(0,80,30,0.15); }
+    .standings-table th:nth-child(2) { text-align: left; }
+    .standings-table td { padding: 9px 8px; border-bottom: 1px solid rgba(0,80,30,0.15); text-align: right; }
+    .standings-table td:nth-child(2) { text-align: left; }
     .standings-table tr:last-child td { border-bottom: none; }
     .standings-table tbody tr:nth-child(even) { background: rgba(0,0,0,0.02); }
     .standings-table .rank {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
       color: var(--ink3);
-      width: 28px;
-    }
-    .standings-table .player-name { font-weight: 700; font-size: 0.95rem; }
-    .standings-table .pts {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-      font-size: 1rem;
+      width: 24px;
       text-align: right;
     }
-    .standings-table .wl {
+    .standings-table .player-name { font-weight: 700; font-size: 0.95rem; text-align: left; }
+    .standings-table .st-num {
       font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
       color: var(--ink2);
-      font-size: 0.78rem;
-      text-align: right;
     }
+    .standings-table .st-pplus {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .standings-table .st-diff {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .standings-table .st-diff.pos { color: var(--green); }
+    .standings-table .st-diff.neg { color: var(--red); }
+    .standings-table .st-diff.zero { color: var(--ink3); }
     .standings-table tr.gold td { color: var(--gold); }
     .standings-table tr.silver td { color: var(--silver); }
     .standings-table tr.bronze td { color: var(--bronze); }
+    .standings-table tr.gold .st-diff.pos,
+    .standings-table tr.silver .st-diff.pos,
+    .standings-table tr.bronze .st-diff.pos { color: inherit; }
+    .standings-table tr.gold .st-diff.neg,
+    .standings-table tr.silver .st-diff.neg,
+    .standings-table tr.bronze .st-diff.neg { color: inherit; }
+    @media (max-width: 480px) {
+      .standings-table .st-pminus { display: none; }
+      .standings-table th.col-pminus { display: none; }
+    }
 
     /* ── ROUNDS ── */
     .round-block { margin-bottom: 12px; }
@@ -577,8 +597,8 @@
       <table class="standings-table">
         <thead><tr>
           <th>#</th><th>Pelaaja</th>
-          <th class="pts">Pist.</th>
-          <th class="wl">V–H</th>
+          <th>V</th><th>T</th><th>H</th>
+          <th>P+</th><th class="col-pminus">P&minus;</th><th>+&minus;</th>
         </tr></thead>
         <tbody id="standings-body"></tbody>
       </table>
@@ -977,27 +997,40 @@ function syncInputs(scores) {
 function renderStandings(scores) {
   const { players } = tourData.meta;
   const { schedule } = tourData;
-  const pts = {}, wins = {}, losses = {};
-  players.forEach(p => { pts[p] = 0; wins[p] = 0; losses[p] = 0; });
+  const wins = {}, draws = {}, losses = {}, pplus = {}, pminus = {};
+  players.forEach(p => { wins[p] = 0; draws[p] = 0; losses[p] = 0; pplus[p] = 0; pminus[p] = 0; });
 
   schedule.forEach(({ round, courts }) => {
     courts.forEach((court, ci) => {
       const sc = scores['r' + round + 'c' + ci];
       if (!sc || sc.sa === undefined || sc.sb === undefined) return;
       const sa = +sc.sa, sb = +sc.sb;
-      court.a.forEach(p => { pts[p] += sa; if (sa > sb) wins[p]++; else if (sb > sa) losses[p]++; });
-      court.b.forEach(p => { pts[p] += sb; if (sb > sa) wins[p]++; else if (sa > sb) losses[p]++; });
+      court.a.forEach(p => {
+        pplus[p] += sa; pminus[p] += sb;
+        if (sa > sb) wins[p]++; else if (sa < sb) losses[p]++; else draws[p]++;
+      });
+      court.b.forEach(p => {
+        pplus[p] += sb; pminus[p] += sa;
+        if (sb > sa) wins[p]++; else if (sb < sa) losses[p]++; else draws[p]++;
+      });
     });
   });
 
-  const sorted = [...players].sort((a, b) => pts[b] - pts[a]);
+  const sorted = [...players].sort((a, b) => pplus[b] - pplus[a]);
   document.getElementById('standings-body').innerHTML = sorted.map((p, i) => {
     const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const diff = pplus[p] - pminus[p];
+    const diffCls = diff > 0 ? 'pos' : diff < 0 ? 'neg' : 'zero';
+    const diffStr = diff > 0 ? '+' + diff : diff;
     return `<tr class="${cls}">
       <td class="rank">${i + 1}</td>
       <td class="player-name">${esc(p)}</td>
-      <td class="pts">${pts[p]}</td>
-      <td class="wl">${wins[p]}&ndash;${losses[p]}</td>
+      <td class="st-num">${wins[p]}</td>
+      <td class="st-num">${draws[p]}</td>
+      <td class="st-num">${losses[p]}</td>
+      <td class="st-pplus">${pplus[p]}</td>
+      <td class="st-num st-pminus">${pminus[p]}</td>
+      <td class="st-diff ${diffCls}">${diffStr}</td>
     </tr>`;
   }).join('');
 }

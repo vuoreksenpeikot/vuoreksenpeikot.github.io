@@ -56,25 +56,43 @@ if (document.readyState === 'loading') {
 // Elo-rating laskenta
 // Tiimin vahvuus = parin pelaajien Elo-arvojen keskiarvo
 // Voiton/häviön paino määräytyy pistemäärän mukaan (suuri voittomarginaali = suurempi muutos)
+// Muutos 1: dynaaminen K-faktor — uudella pelaajalla suurempi K, tasaantuu kokemuksen myötä
+// Muutos 2: saman kierroksen ottelut käsitellään samanaikaisesti (ei järjestysharha)
 function computeElo() {
-  const K = 32;
   const ratings = {};
-  PLAYERS.forEach(p => { ratings[p] = 1000; });
+  const matchCount = {};
+  PLAYERS.forEach(p => { ratings[p] = 1000; matchCount[p] = 0; });
 
+  // K pienenee kokemuksen myötä: uusi pelaaja <10 ottelua → 40, 10–20 → 32, 20+ → 24
+  const getK = n => n < 10 ? 40 : n < 20 ? 32 : 24;
+
+  // Ryhmitä ottelut (turnaus, kierros) -pareittain samanaikaista käsittelyä varten
   const ordered = [...M].sort((a, b) => a.t !== b.t ? a.t - b.t : a.r - b.r);
-
+  const rounds = [];
   ordered.forEach(m => {
-    const rA = m.a.reduce((s, p) => s + ratings[p], 0) / m.a.length;
-    const rB = m.b.reduce((s, p) => s + ratings[p], 0) / m.b.length;
-    const eA = 1 / (1 + Math.pow(10, (rB - rA) / 400));
-    const eB = 1 - eA;
-    const total = m.sa + m.sb;
-    const sA = total > 0 ? m.sa / total : 0.5;
-    const sB = 1 - sA;
-    const deltaA = K * (sA - eA);
-    const deltaB = K * (sB - eB);
-    m.a.forEach(p => { ratings[p] += deltaA; });
-    m.b.forEach(p => { ratings[p] += deltaB; });
+    const last = rounds[rounds.length - 1];
+    if (!last || last.t !== m.t || last.r !== m.r) rounds.push({ t: m.t, r: m.r, matches: [m] });
+    else last.matches.push(m);
+  });
+
+  rounds.forEach(round => {
+    // Laske kaikki deltat ensin vanhoilla ratingeilla
+    const deltas = {};
+    round.matches.forEach(m => {
+      const rA = m.a.reduce((s, p) => s + ratings[p], 0) / m.a.length;
+      const rB = m.b.reduce((s, p) => s + ratings[p], 0) / m.b.length;
+      const eA = 1 / (1 + Math.pow(10, (rB - rA) / 400));
+      const eB = 1 - eA;
+      const total = m.sa + m.sb;
+      const sA = total > 0 ? m.sa / total : 0.5;
+      const sB = 1 - sA;
+      // Jokainen pelaaja käyttää omaa K:taan ottelumäärän perusteella
+      m.a.forEach(p => { deltas[p] = (deltas[p] || 0) + getK(matchCount[p]) * (sA - eA); });
+      m.b.forEach(p => { deltas[p] = (deltas[p] || 0) + getK(matchCount[p]) * (sB - eB); });
+    });
+    // Päivitä kaikki ratingit ja ottelumäärät samanaikaisesti
+    Object.entries(deltas).forEach(([p, d]) => { ratings[p] += d; });
+    round.matches.forEach(m => { [...m.a, ...m.b].forEach(p => { matchCount[p]++; }); });
   });
 
   PLAYERS.forEach(p => { ratings[p] = Math.round(ratings[p]); });

@@ -576,8 +576,12 @@ function renderElo(){
         <div style="font-size:14px;color:var(--ink)">Pistemäärä <b>vaikuttaa muutoksen suuruuteen</b> — suuri voittomarginaali (esim. 30–2) antaa enemmän pisteitä kuin niukka voitto (17–15).</div>
       </div>
       <div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Otteluiden järjestys</div>
-        <div style="font-size:14px;color:var(--ink)">Ottelut käydään läpi <b>kronologisessa järjestyksessä</b> (Tour 1 → 5), joten aiemmat tulokset vaikuttavat myöhempien otteluiden pisteytykseen.</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Dynaaminen K-faktor</div>
+        <div style="font-size:14px;color:var(--ink)">Uudella pelaajalla suurempi herkkyys (<b>K=40</b> alle 10 ottelua), jolloin rating löytää tasonsa nopeammin. Kokenut pelaaja on vakaampi (<b>K=24</b> yli 20 ottelua).</div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">Samanaikainen päivitys</div>
+        <div style="font-size:14px;color:var(--ink)">Saman kierroksen kaikki ottelut lasketaan <b>samanaikaisesti</b> vanhoilla ratingeilla — yksittäisen ottelun järjestyksellä ei ole väliä.</div>
       </div>
     </div>
   </div>`;

@@ -568,7 +568,7 @@
 </div>
 
 <!-- NAV -->
-<nav class="nav">
+<nav class="nav" role="navigation" aria-label="Päänavigaatio">
   <a href="index.html">← Tilastot</a>
   <a href="americano.html" class="active">Americano</a>
 </nav>
@@ -600,7 +600,7 @@
       <div id="court-picker" class="court-pick-grid"></div>
       <label style="margin-top: 18px;">Pelaajat</label>
       <div id="known-chips-wrap" class="known-chips-wrap" style="display:none; margin-top:10px;">
-        <div class="known-chips-label">Valitse tuttu pelaaja</div>
+        <div class="known-chips-label">Kuka mukana?!</div>
         <div id="known-chips" class="known-chips"></div>
         <div style="margin: 10px 0 4px; border-top: 1px solid var(--border);"></div>
       </div>
@@ -1062,6 +1062,7 @@ function syncInputs(scores) {
       btn.dataset.value = v;
       btn.textContent = v;
       btn.classList.add('has-value');
+      btn.classList.remove('auto-filled');
     } else {
       btn.dataset.value = '';
       btn.textContent = '–';

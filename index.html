@@ -272,7 +272,7 @@ footer a:hover{text-decoration:underline}
   <div id="recentActivity" style="margin-bottom:40px"></div>
 
   <div>
-    <div class="sec-label">PPT-rating, Peikot Padel Tour Rating</div>
+    <div class="sec-label">Peikot Padel Tour Rating</div>
     <div class="sec-title">Parhaat pelaajat</div>
     <div id="eloContent"></div>
   </div>
@@ -581,7 +581,7 @@ function renderElo(){
       </div>
     </div>
   </div>`;
-  document.getElementById('eloContent').innerHTML=`${eloExplainer}${podiumHtml}${tableHtml}`;
+  document.getElementById('eloContent').innerHTML=`${podiumHtml}${tableHtml}${eloExplainer}`;
 }
 
 // INIT

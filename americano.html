@@ -497,7 +497,7 @@
       <div class="sec-label">Uusi turnaus</div>
       <h2>Luo Americano</h2>
       <label for="tour-name">Nimi</label>
-      <input type="text" id="tour-name" placeholder="Tour 6">
+      <input type="text" id="tour-name" placeholder="Peikot Padel Tour 6">
       <label for="tour-date">Päivämäärä</label>
       <input type="date" id="tour-date">
       <label for="player-count">Pelaajamäärä</label>
@@ -628,8 +628,13 @@ async function loadKnownPlayers() {
   try {
     const r = await fetch('data/all-matches.json?t=' + Date.now());
     const d = await r.json();
-    const known = [...new Set(d.matches.flatMap(m => [...m.a, ...m.b]))].sort();
+    // auto-fill tour name
+    const nextNum = (d.tours.length > 0 ? Math.max(...d.tours.map(t => t.id)) : 0) + 1;
+    const nameEl = document.getElementById('tour-name');
+    nameEl.value = `Peikot Padel Tour ${nextNum}`;
+    nameEl.placeholder = `Peikot Padel Tour ${nextNum}`;
     // datalist for text autocomplete
+    const known = [...new Set(d.matches.flatMap(m => [...m.a, ...m.b]))].sort();
     const dl = document.getElementById('known-players-dl');
     dl.innerHTML = known.map(p => `<option value="${esc(p)}">`).join('');
     // clickable chips

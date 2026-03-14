@@ -354,6 +354,11 @@
       color: var(--ink);
       background: var(--card2);
     }
+    .score-inputs input.auto-filled {
+      color: var(--ink3);
+      border-color: var(--border);
+      border-style: dashed;
+    }
     .score-inputs .dash {
       font-family: 'JetBrains Mono', monospace;
       color: var(--ink3);
@@ -794,11 +799,11 @@ function renderRounds(schedule, scores) {
           <div class="court-label">Kenttä ${ci + 1}</div>
         </div>
         <div class="score-inputs">
-          <input type="number" min="0" max="99" class="score-inp"
+          <input type="number" min="0" max="32" class="score-inp"
             data-key="${key}" data-field="sa"
             value="${sc.sa !== undefined ? sc.sa : ''}" placeholder="–">
           <span class="dash">–</span>
-          <input type="number" min="0" max="99" class="score-inp"
+          <input type="number" min="0" max="32" class="score-inp"
             data-key="${key}" data-field="sb"
             value="${sc.sb !== undefined ? sc.sb : ''}" placeholder="–">
         </div>
@@ -825,19 +830,40 @@ function renderRounds(schedule, scores) {
 }
 
 function onScoreInput(e) {
-  const { key, field } = e.target.dataset;
-  const val = e.target.value;
-  const tk = key + field;
-  clearTimeout(debounceTimers[tk]);
-  debounceTimers[tk] = setTimeout(async () => {
-    const n = parseInt(val);
-    const ref = db.ref('tournaments/' + tourId + '/scores/' + key + '/' + field);
-    if (val === '' || isNaN(n)) {
-      await ref.remove();
-    } else {
-      await ref.set(n);
+  const inp = e.target;
+  const { key, field } = inp.dataset;
+  const val = inp.value;
+  const n = parseInt(val);
+
+  // auto-fill complement to 32
+  const partnerField = field === 'sa' ? 'sb' : 'sa';
+  const partnerInp = document.querySelector(`.score-inp[data-key="${key}"][data-field="${partnerField}"]`);
+  if (partnerInp && val !== '' && !isNaN(n) && n >= 0 && n <= 32) {
+    const complement = 32 - n;
+    if (partnerInp.value !== String(complement)) {
+      partnerInp.value = complement;
+      partnerInp.classList.add('auto-filled');
     }
-  }, 600);
+  } else if (val === '' && partnerInp) {
+    // clear partner too if this field is cleared
+    partnerInp.value = '';
+    partnerInp.classList.remove('auto-filled');
+  }
+  inp.classList.remove('auto-filled');
+
+  // debounce-write both fields
+  const writeField = (f, v) => {
+    const tk = key + f;
+    clearTimeout(debounceTimers[tk]);
+    debounceTimers[tk] = setTimeout(async () => {
+      const num = parseInt(v);
+      const ref = db.ref('tournaments/' + tourId + '/scores/' + key + '/' + f);
+      if (v === '' || isNaN(num)) await ref.remove();
+      else await ref.set(num);
+    }, 600);
+  };
+  writeField(field, val);
+  if (partnerInp) writeField(partnerField, partnerInp.value);
 }
 
 function syncInputs(scores) {

@@ -1186,49 +1186,76 @@ function buildSchedule(players) {
   }
   const n = ps.length;
   const fixed = ps[n - 1];
-  const rot = ps.slice(0, n - 1);
+  const rot = [...ps.slice(0, n - 1)];
 
-  // Tallentaa kuinka monta kertaa kukin vastustajapari on kohdannut.
-  const facedCount = {};
-  const faceKey = (a, b) => a < b ? a + '\x00' + b : b + '\x00' + a;
-
-  const rounds = [];
+  // Esituottaa kumppaniparit jokaiselle kierrokselle
+  const roundPairs = [];
   for (let r = 0; r < n - 1; r++) {
-    // Rakenna parit tältä kierrokselta (1-faktorisointi — kumppanijakautuma pysyy täydellisenä)
-    const pairs = [];
-    pairs.push([fixed, rot[0]]);
+    const pairs = [[fixed, rot[0]]];
     for (let i = 1; i <= (n - 2) / 2; i++) pairs.push([rot[i], rot[n - 1 - i]]);
-
-    // Valitse kenttäpariutus joka minimoi vastustajatoistumia.
-    // Eksponentiaalinen pisteytys: 1000^kohtaamiset — takaa ettei koskaan
-    // valita 4. kohtaamista kun jokin vaihtoehto sen välttää.
-    // (8 pelaajaa: max 8 paria × 1000^2 = 8M < 1000^3 = 1G → matemaattinen tae)
-    const allPairings = getAllCourtPairings(pairs);
-    let bestScore = Infinity;
-    let bestCourts = allPairings[0];
-    for (const pairing of allPairings) {
-      let score = 0;
-      for (const { a, b } of pairing) {
-        for (const pa of a) for (const pb of b) {
-          const c = facedCount[faceKey(pa, pb)] || 0;
-          if (c > 0) score += Math.pow(1000, c);
-        }
-      }
-      if (score < bestScore) { bestScore = score; bestCourts = pairing; }
-    }
-
-    // Rekisteröi tämän kierroksen vastustajakohtaamiset
-    for (const { a, b } of bestCourts) {
-      for (const pa of a) for (const pb of b) {
-        const k = faceKey(pa, pb);
-        facedCount[k] = (facedCount[k] || 0) + 1;
-      }
-    }
-
-    rounds.push({ round: r + 1, courts: bestCourts });
+    roundPairs.push(pairs);
     rot.unshift(rot.pop());
   }
-  return rounds;
+
+  const faceKey = (a, b) => a < b ? a + '\x00' + b : b + '\x00' + a;
+  const optionsPerRound = roundPairs.map(p => getAllCourtPairings(p));
+
+  // Peruutuva haku: rakennetaan aikataulu jossa kukin pari kohtaa vastustajana
+  // enintään `limit` kertaa. 8 pelaajalla teoreettinen optimi on tasan 2
+  // (7 kierrosta × 2 vastustajaa / 7 muuta = 2.0).
+  function tryBuild(limit) {
+    const facedCount = {};
+    const schedule = [];
+
+    function solve(r) {
+      if (r === n - 1) return true;
+
+      // Järjestä vaihtoehdot: vähiten ristiriitoja aiheuttava ensin
+      const scored = optionsPerRound[r].map(courts => {
+        let sc = 0;
+        for (const { a, b } of courts)
+          for (const pa of a) for (const pb of b)
+            sc += Math.pow(100, facedCount[faceKey(pa, pb)] || 0);
+        return { courts, sc };
+      }).sort((x, y) => x.sc - y.sc);
+
+      for (const { courts } of scored) {
+        // Hylkää vaihtoehto joka ylittäisi kohtaamisrajan
+        let ok = true;
+        for (const { a, b } of courts) {
+          for (const pa of a) for (const pb of b)
+            if ((facedCount[faceKey(pa, pb)] || 0) >= limit) { ok = false; break; }
+          if (!ok) break;
+        }
+        if (!ok) continue;
+
+        // Ota vaihtoehto käyttöön
+        for (const { a, b } of courts)
+          for (const pa of a) for (const pb of b) {
+            const k = faceKey(pa, pb);
+            facedCount[k] = (facedCount[k] || 0) + 1;
+          }
+        schedule.push(courts);
+        if (solve(r + 1)) return true;
+
+        // Peruuta jos ei johtanut ratkaisuun
+        schedule.pop();
+        for (const { a, b } of courts)
+          for (const pa of a) for (const pb of b) {
+            const k = faceKey(pa, pb);
+            facedCount[k]--;
+            if (!facedCount[k]) delete facedCount[k];
+          }
+      }
+      return false;
+    }
+
+    return solve(0) ? schedule : null;
+  }
+
+  // Kokeile ensin optimia (max 2), sitten löysemmät varavaihtoehdot
+  const schedule = tryBuild(2) || tryBuild(3) || tryBuild(n);
+  return schedule.map((courts, i) => ({ round: i + 1, courts }));
 }
 
 // ============================================================

@@ -351,11 +351,25 @@
       border-top: none;
       padding: 12px 14px;
       display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      grid-template-columns: 1fr auto 1fr auto;
       align-items: center;
       gap: 10px;
       font-size: 0.85rem;
     }
+    .score-reset-btn {
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      background: transparent;
+      border: 1.5px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--ink3);
+      opacity: 0.35;
+      transition: all .15s;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .score-reset-btn:hover { opacity: 1; color: var(--red); border-color: var(--red); background: rgba(192,40,24,0.07); }
     .match-card:last-child { border-radius: 0 0 8px 8px; }
     .team-name { font-weight: 700; color: var(--ink); }
     .court-label {
@@ -943,6 +957,15 @@ function renderRounds(schedule, scores) {
             onclick="openScorePicker(this)">${sc.sb !== undefined ? sc.sb : '–'}</button>
         </div>
         <div class="team-name">${esc(court.b[0])} &amp; ${esc(court.b[1])}</div>
+        <button type="button" class="score-reset-btn" title="Nollaa tulos" onclick="resetScore('${key}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6l-1 14H6L5 6"></path>
+            <path d="M10 11v6"></path>
+            <path d="M14 11v6"></path>
+            <path d="M9 6V4h6v2"></path>
+          </svg>
+        </button>
       </div>`;
     }).join('');
 
@@ -1031,6 +1054,10 @@ function pickScore(val) {
 
   writeScore(key, field, val);
   closeScorePicker();
+}
+
+async function resetScore(key) {
+  await db.ref('tournaments/' + tourId + '/scores/' + key).remove();
 }
 
 function writeScore(key, field, val) {

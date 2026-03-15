@@ -1188,12 +1188,9 @@ function buildSchedule(players) {
   const fixed = ps[n - 1];
   const rot = ps.slice(0, n - 1);
 
-  // Tallentaa millä kierroksilla (0-indeksoitu) kukin pari on kohdannut vastustajina.
-  // Tuoreet kohtaamiset saavat suuremman painon jotta peräkkäiset toistot minimoidaan.
-  const facedAt = {};
+  // Tallentaa kuinka monta kertaa kukin vastustajapari on kohdannut.
+  const facedCount = {};
   const faceKey = (a, b) => a < b ? a + '\x00' + b : b + '\x00' + a;
-  // Pienempi recency-paino = parempi; gap 1 → ×8, gap 2 → ×3, vanhempi → ×1
-  const recencyWeight = (gap) => gap === 1 ? 8 : gap === 2 ? 3 : 1;
 
   const rounds = [];
   for (let r = 0; r < n - 1; r++) {
@@ -1202,8 +1199,10 @@ function buildSchedule(players) {
     pairs.push([fixed, rot[0]]);
     for (let i = 1; i <= (n - 2) / 2; i++) pairs.push([rot[i], rot[n - 1 - i]]);
 
-    // Valitse kenttäpariutus joka minimoi vastustajatoistumia:
-    // ensisijaisesti kohtaamiskertojen määrä (×100), toissijaisesti tuoreus.
+    // Valitse kenttäpariutus joka minimoi vastustajatoistumia.
+    // Eksponentiaalinen pisteytys: 1000^kohtaamiset — takaa ettei koskaan
+    // valita 4. kohtaamista kun jokin vaihtoehto sen välttää.
+    // (8 pelaajaa: max 8 paria × 1000^2 = 8M < 1000^3 = 1G → matemaattinen tae)
     const allPairings = getAllCourtPairings(pairs);
     let bestScore = Infinity;
     let bestCourts = allPairings[0];
@@ -1211,11 +1210,8 @@ function buildSchedule(players) {
       let score = 0;
       for (const { a, b } of pairing) {
         for (const pa of a) for (const pb of b) {
-          const prev = facedAt[faceKey(pa, pb)];
-          if (prev) {
-            score += prev.length * 100; // ensisijainen: minimoi kohtaamiskerrat
-            for (const pr of prev) score += recencyWeight(r - pr); // toissijainen: vältä peräkkäisyys
-          }
+          const c = facedCount[faceKey(pa, pb)] || 0;
+          if (c > 0) score += Math.pow(1000, c);
         }
       }
       if (score < bestScore) { bestScore = score; bestCourts = pairing; }
@@ -1225,7 +1221,7 @@ function buildSchedule(players) {
     for (const { a, b } of bestCourts) {
       for (const pa of a) for (const pb of b) {
         const k = faceKey(pa, pb);
-        (facedAt[k] = facedAt[k] || []).push(r);
+        facedCount[k] = (facedCount[k] || 0) + 1;
       }
     }
 

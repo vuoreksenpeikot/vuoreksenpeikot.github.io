@@ -372,6 +372,9 @@
     .score-reset-btn:hover { opacity: 1; color: var(--red); border-color: var(--red); background: rgba(192,40,24,0.07); }
     .match-card:last-child { border-radius: 0 0 8px 8px; }
     .team-name { font-weight: 700; color: var(--ink); }
+    .team-a, .team-b { padding-left: 8px; border-radius: 4px; }
+    .team-a { border-left: 3px solid var(--green); color: var(--green-bright); background: rgba(26,138,52,0.06); }
+    .team-b { border-left: 3px solid var(--red); color: var(--red); background: rgba(192,40,24,0.06); }
     .court-label {
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.7rem;
@@ -944,7 +947,7 @@ function renderRounds(schedule, scores) {
         ? tourData.meta.courts[ci] : ci + 1;
       return `<div class="match-card" id="mc-${key}">
         <div>
-          <div class="team-name">${esc(court.a[0])} &amp; ${esc(court.a[1])}</div>
+          <div class="team-name team-a">${esc(court.a[0])} &amp; ${esc(court.a[1])}</div>
           <div class="court-label">Kenttä ${courtNum}</div>
         </div>
         <div class="score-inputs">
@@ -956,7 +959,7 @@ function renderRounds(schedule, scores) {
             data-key="${key}" data-field="sb" data-value="${sc.sb !== undefined ? sc.sb : ''}"
             onclick="openScorePicker(this)">${sc.sb !== undefined ? sc.sb : '–'}</button>
         </div>
-        <div class="team-name">${esc(court.b[0])} &amp; ${esc(court.b[1])}</div>
+        <div class="team-name team-b">${esc(court.b[0])} &amp; ${esc(court.b[1])}</div>
         <button type="button" class="score-reset-btn" title="Nollaa tulos" onclick="resetScore('${key}')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>

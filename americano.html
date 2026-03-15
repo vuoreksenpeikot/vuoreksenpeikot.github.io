@@ -605,11 +605,7 @@
       <input type="text" id="tour-name" placeholder="Tour 6">
       <label for="tour-date">Päivämäärä</label>
       <input type="date" id="tour-date">
-      <label for="player-count">Pelaajamäärä</label>
-      <select id="player-count" onchange="renderPlayerSlots()">
-        <option value="8">8 pelaajaa (7 kierrosta)</option>
-        <option value="12">12 pelaajaa (11 kierrosta)</option>
-      </select>
+      <input type="hidden" id="player-count" value="8">
       <label style="margin-top: 18px;" id="courts-label">Kentät (valitse 2)</label>
       <div id="court-picker" class="court-pick-grid"></div>
       <label style="margin-top: 18px;">Pelaajat</label>
@@ -779,8 +775,7 @@ function renderPlayerSlots() {
 }
 
 function renderCourtPicker() {
-  const n = parseInt(document.getElementById('player-count').value);
-  const needed = n === 12 ? 3 : 2;
+  const needed = 2;
   document.getElementById('courts-label').textContent = `Kentät (valitse ${needed})`;
   const picker = document.getElementById('court-picker');
   picker.innerHTML = '';
@@ -858,7 +853,7 @@ async function createTournament() {
   const date = document.getElementById('tour-date').value;
   const n = parseInt(document.getElementById('player-count').value);
   const players = [...document.querySelectorAll('#player-grid input')].map(i => i.value.trim()).filter(Boolean);
-  const needed = n === 12 ? 3 : 2;
+  const needed = 2;
   const courts = [...document.querySelectorAll('#court-picker .court-btn.selected')]
     .map(b => parseInt(b.dataset.court)).sort((a, b) => a - b);
 
@@ -1153,109 +1148,42 @@ function copyShare() {
 }
 
 // ============================================================
-// SCHEDULE – K_{2n} 1-factorization + recency-weighted court pairing
-// Taataan: jokainen pelaa kumppanina jokaisen kanssa tasan kerran (1-faktorisointi).
-// Optimoidaan: kenttäpariutus minimoi vastustajatoistumia painottamalla tuoreita
-// kohtaamisia selvästi enemmän (edellinen kierros ×8, kaksi kierrosta sitten ×3,
-// vanhemmat ×1), jolloin pelaajat eivät kohtaa samaa vastustajaa peräkkäisillä
-// kierroksilla ja pitkällä tähtäimellä jakautuma pysyy silti tasaisena.
+// SCHEDULE – esivalmisteltu tasapainoinen 8 pelaajan pohjakaavio
+// Taataan rakenteellisesti:
+//   • jokainen pelaa kumppanina jokaisen kanssa tasan kerran
+//   • jokainen kohtaa jokaisen vastustajana tasan kaksi kertaa
+// Pohjakaavio on johdettu oikeista turnaustuloksista (Tour 1).
+// Satunnaistetaan vain nimien sijoittelu slotteihin 0–7.
 // ============================================================
 
-// Palauttaa kaikki tavat jakaa `pairs`-lista kentiksi (kukin kenttä = { a, b }).
-// Esim. 4 paria → 3 vaihtoehtoa; 6 paria → 15 vaihtoehtoa.
-function getAllCourtPairings(pairs) {
-  if (pairs.length === 0) return [[]];
-  const first = pairs[0];
-  const rest = pairs.slice(1);
-  const result = [];
-  for (let i = 0; i < rest.length; i++) {
-    const partner = rest[i];
-    const remaining = rest.filter((_, idx) => idx !== i);
-    for (const sub of getAllCourtPairings(remaining)) {
-      result.push([{ a: first, b: partner }, ...sub]);
-    }
-  }
-  return result;
-}
-
 function buildSchedule(players) {
+  // Pohjakaavio: 7 kierrosta, 2 kenttää/kierros, slotit 0–7.
+  // Johdettu Tour 1 -turnauksesta. Takaa: kumppani=1×, vastustaja=2×.
+  const TEMPLATE = [
+    [{ a: [0,1], b: [2,3] }, { a: [4,5], b: [6,7] }],
+    [{ a: [0,2], b: [4,7] }, { a: [5,6], b: [3,1] }],
+    [{ a: [0,4], b: [5,1] }, { a: [6,3], b: [7,2] }],
+    [{ a: [0,5], b: [6,2] }, { a: [3,7], b: [1,4] }],
+    [{ a: [0,6], b: [3,4] }, { a: [7,1], b: [2,5] }],
+    [{ a: [0,3], b: [7,5] }, { a: [1,2], b: [4,6] }],
+    [{ a: [0,7], b: [1,6] }, { a: [2,4], b: [5,3] }],
+  ];
+
+  // Sekoita pelaajat satunnaisesti (Fisher-Yates)
   const ps = [...players];
   for (let i = ps.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [ps[i], ps[j]] = [ps[j], ps[i]];
   }
-  const n = ps.length;
-  const fixed = ps[n - 1];
-  const rot = [...ps.slice(0, n - 1)];
 
-  // Esituottaa kumppaniparit jokaiselle kierrokselle
-  const roundPairs = [];
-  for (let r = 0; r < n - 1; r++) {
-    const pairs = [[fixed, rot[0]]];
-    for (let i = 1; i <= (n - 2) / 2; i++) pairs.push([rot[i], rot[n - 1 - i]]);
-    roundPairs.push(pairs);
-    rot.unshift(rot.pop());
-  }
-
-  const faceKey = (a, b) => a < b ? a + '\x00' + b : b + '\x00' + a;
-  const optionsPerRound = roundPairs.map(p => getAllCourtPairings(p));
-
-  // Peruutuva haku: rakennetaan aikataulu jossa kukin pari kohtaa vastustajana
-  // enintään `limit` kertaa. 8 pelaajalla teoreettinen optimi on tasan 2
-  // (7 kierrosta × 2 vastustajaa / 7 muuta = 2.0).
-  function tryBuild(limit) {
-    const facedCount = {};
-    const schedule = [];
-
-    function solve(r) {
-      if (r === n - 1) return true;
-
-      // Järjestä vaihtoehdot: vähiten ristiriitoja aiheuttava ensin
-      const scored = optionsPerRound[r].map(courts => {
-        let sc = 0;
-        for (const { a, b } of courts)
-          for (const pa of a) for (const pb of b)
-            sc += Math.pow(100, facedCount[faceKey(pa, pb)] || 0);
-        return { courts, sc };
-      }).sort((x, y) => x.sc - y.sc);
-
-      for (const { courts } of scored) {
-        // Hylkää vaihtoehto joka ylittäisi kohtaamisrajan
-        let ok = true;
-        for (const { a, b } of courts) {
-          for (const pa of a) for (const pb of b)
-            if ((facedCount[faceKey(pa, pb)] || 0) >= limit) { ok = false; break; }
-          if (!ok) break;
-        }
-        if (!ok) continue;
-
-        // Ota vaihtoehto käyttöön
-        for (const { a, b } of courts)
-          for (const pa of a) for (const pb of b) {
-            const k = faceKey(pa, pb);
-            facedCount[k] = (facedCount[k] || 0) + 1;
-          }
-        schedule.push(courts);
-        if (solve(r + 1)) return true;
-
-        // Peruuta jos ei johtanut ratkaisuun
-        schedule.pop();
-        for (const { a, b } of courts)
-          for (const pa of a) for (const pb of b) {
-            const k = faceKey(pa, pb);
-            facedCount[k]--;
-            if (!facedCount[k]) delete facedCount[k];
-          }
-      }
-      return false;
-    }
-
-    return solve(0) ? schedule : null;
-  }
-
-  // Kokeile ensin optimia (max 2), sitten löysemmät varavaihtoehdot
-  const schedule = tryBuild(2) || tryBuild(3) || tryBuild(n);
-  return schedule.map((courts, i) => ({ round: i + 1, courts }));
+  // Mapataan slot-indeksit 0–7 sekoitettuihin nimiin
+  return TEMPLATE.map((courts, i) => ({
+    round: i + 1,
+    courts: courts.map(({ a, b }) => ({
+      a: [ps[a[0]], ps[a[1]]],
+      b: [ps[b[0]], ps[b[1]]],
+    })),
+  }));
 }
 
 // ============================================================

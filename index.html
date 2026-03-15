@@ -49,6 +49,9 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .hero-title span{color:var(--green-bright)}
 .hero-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2);margin-top:12px;display:flex;gap:20px;flex-wrap:wrap}
 .hero-sub b{color:var(--white);font-weight:600}
+.btn-americano{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;margin-top:12px;background:linear-gradient(135deg,var(--green) 0%,var(--green-bright) 100%);color:#fff;border-radius:7px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-decoration:none;letter-spacing:.2px;box-shadow:0 2px 8px rgba(15,112,40,0.22),inset 0 1px 0 rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.10);transition:transform .15s,box-shadow .15s;white-space:nowrap}
+.btn-americano:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(15,112,40,0.36),inset 0 1px 0 rgba(255,255,255,0.15)}
+.btn-americano:active{transform:translateY(0);box-shadow:0 2px 8px rgba(15,112,40,0.2)}
 
 /* NAV */
 .nav{position:sticky;top:0;z-index:100;background:rgba(237,247,240,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 40px;display:flex;gap:0;overflow-x:auto}
@@ -271,7 +274,10 @@ footer a:hover{text-decoration:underline}
   <div class="hero-text">
     <div class="hero-eyebrow">Vuoreksen Peikot ry</div>
     <div class="hero-title">Peikot Padel <span>Tour</span></div>
-    <div class="hero-sub" id="heroStats"></div>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:14px">
+      <div class="hero-sub" id="heroStats"></div>
+      <a href="americano.html" class="btn-americano"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Luo Americano</a>
+    </div>
   </div>
 </div>
 
@@ -523,13 +529,14 @@ function filterPlayerMatches(filter,btn){
 }
 function closePlayer(){document.getElementById('detailOverlay').classList.remove('open');document.body.style.overflow=''}
 document.getElementById('detailOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closePlayer()});
-function closeReport(){document.getElementById('reportOverlay').classList.remove('open');document.body.style.overflow=''}
+function closeReport(){document.getElementById('reportOverlay').classList.remove('open');document.body.style.overflow='';history.replaceState(null,'',location.pathname+location.search)}
 document.getElementById('reportOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeReport()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePlayer();closeReport()}});
 
 // TOURNAMENT REPORT
 function openTournamentReport(ti){
   const tour=TOURS[ti];
+  history.replaceState(null,'',location.pathname+location.search+'#tour='+tour.id);
   const tM=M.filter(m=>m.t===ti);
   const tP=[...new Set(tM.flatMap(m=>[...m.a,...m.b]))];
 
@@ -700,13 +707,14 @@ function openTournamentReport(ti){
     if(histCards)historySection=`<div class="sub-title" style="margin-top:24px">Historiavertailu</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">${histCards}</div>`;
   }
 
-  const waText=encodeURIComponent(tour.name+' \u2013 '+tour.date+'\n\n'+standings.map((s,i)=>`${i+1}. ${s.name}  ${s.pts}p  (${s.w}V ${s.l}H)`).join('\n')+'\n\nvuoreksenpeikot.github.io');
+  const waText=encodeURIComponent(tour.name+' \u2013 '+tour.date+'\n\n'+standings.map((s,i)=>`${i+1}. ${s.name}  ${s.pts}p  (${s.w}V ${s.l}H)`).join('\n')+'\n\nvuoreksenpeikot.github.io/#tour='+tour.id);
   const waBtn=`<a href="https://wa.me/?text=${waText}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:#25D366;color:#fff;border-radius:6px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-decoration:none;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.553 4.103 1.515 5.83L0 24l6.335-1.485A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.006-1.371l-.36-.214-3.724.872.939-3.618-.235-.372A9.818 9.818 0 1 1 12 21.818z"/></svg>Jaa WhatsAppissa</a>`;
   let roundsHtml='';
   rounds.forEach(r=>{const rm=tM.filter(m=>m.r===r);roundsHtml+=`<div class="sub-title">Erä ${r}</div><div class="match-list">`;rm.forEach(m=>{const s1c=m.sa>m.sb?'w':m.sa<m.sb?'l':'t';const s2c=m.sb>m.sa?'w':m.sb<m.sa?'l':'t';roundsHtml+=`<div class="match-row"><div class="match-meta">Erä ${m.r}</div><div class="match-team">${m.a.map(esc).join(' & ')}</div><div class="match-score"><span class="${s1c}">${m.sa}</span><span style="color:var(--ink3);font-size:13px"> – </span><span class="${s2c}">${m.sb}</span></div><div class="match-team right">${m.b.map(esc).join(' & ')}</div><div></div></div>`;});roundsHtml+=`</div>`;});
   document.getElementById('reportPanel').innerHTML=`
     <button class="detail-close" onclick="closeReport()">✕</button>
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:20px"><div><div class="detail-name">${esc(tour.name)}</div><div class="detail-sub">${tour.date} · ${tP.length} pelaajaa · ${tM.length} ottelua</div></div>${waBtn}</div>
+    <div style="margin-bottom:8px"><div class="detail-name">${esc(tour.name)}</div><div class="detail-sub">${tour.date} · ${tP.length} pelaajaa · ${tM.length} ottelua</div></div>
+    <div style="margin-bottom:20px">${waBtn}</div>
     <div class="sub-title">Sijoitukset</div>
     <table class="lb-table" style="margin-bottom:20px"><thead><tr><th>#</th><th>Pelaaja</th><th class="r">V</th><th class="r">H</th><th class="r">P+</th><th class="r">+/-</th></tr></thead><tbody>${standingsHtml}</tbody></table>
     <div class="sub-title">Ottelutilastot</div>
@@ -845,6 +853,9 @@ function renderElo(){
 // INIT
 function init(){
   renderHero();renderRecentActivity();renderElo();renderAwards();buildH2HChips();renderKehitys();renderTournaments();
+  // Avaa raportti suoraan hash-linkin kautta (esim. #tour=3)
+  const m=location.hash.match(/^#tour=(\d+)$/);
+  if(m){const id=parseInt(m[1]);const ti=TOURS.findIndex(t=>t.id===id);if(ti>=0)openTournamentReport(ti);}
   // Scroll-to-top visibility
   const scrollBtn=document.getElementById('scrollTop');
   window.addEventListener('scroll',()=>{scrollBtn.classList.toggle('visible',window.scrollY>400)},{passive:true});

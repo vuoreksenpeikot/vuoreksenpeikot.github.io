@@ -350,11 +350,22 @@
       border: 1px solid var(--border);
       border-top: none;
       padding: 12px 14px;
-      display: grid;
-      grid-template-columns: 1fr auto 1fr auto;
-      align-items: center;
-      gap: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
       font-size: 0.85rem;
+    }
+    .match-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .match-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 2px;
     }
     .score-reset-btn {
       width: 30px; height: 30px;
@@ -398,11 +409,11 @@
     .score-btn:active { transform: scale(0.94); }
     .score-btn.has-value { color: var(--ink); border-color: var(--border2); background: rgba(26,138,52,0.06); }
     .score-btn.auto-filled { color: var(--ink3); border-style: dashed; background: var(--bg); }
-    .score-inputs .dash {
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--ink3);
-      font-size: 1rem;
-    }
+    /* team-coloured score buttons */
+    .score-btn.score-a.has-value { color: var(--green-bright); border-color: var(--green); background: rgba(26,138,52,0.10); }
+    .score-btn.score-b.has-value { color: var(--red); border-color: var(--red); background: rgba(192,40,24,0.07); }
+    .score-btn.score-a.auto-filled { border-color: var(--green); }
+    .score-btn.score-b.auto-filled { border-color: var(--red); }
     /* picker */
     #score-picker-overlay { position: fixed; inset: 0; z-index: 1000; }
     #score-picker {
@@ -559,8 +570,6 @@
     @media (max-width: 600px) {
       .hero, .nav, .container { padding-left: 16px; padding-right: 16px; }
       .container { padding-top: 20px; }
-      .match-card { grid-template-columns: 1fr; gap: 8px; }
-      .score-inputs { justify-content: flex-start; }
       .player-grid { grid-template-columns: 1fr 1fr; }
       .token-row { flex-direction: column; align-items: stretch; }
       .token-row .btn-gold { width: 100%; justify-content: center; margin-top: 4px; }
@@ -946,29 +955,30 @@ function renderRounds(schedule, scores) {
       const courtNum = (tourData.meta.courts && tourData.meta.courts[ci] != null)
         ? tourData.meta.courts[ci] : ci + 1;
       return `<div class="match-card" id="mc-${key}">
-        <div>
+        <div class="match-row">
           <div class="team-name team-a">${esc(court.a[0])} &amp; ${esc(court.a[1])}</div>
-          <div class="court-label">Kenttä ${courtNum}</div>
-        </div>
-        <div class="score-inputs">
-          <button type="button" class="score-btn score-inp${sc.sa !== undefined ? ' has-value' : ''}"
+          <button type="button" class="score-btn score-inp score-a${sc.sa !== undefined ? ' has-value' : ''}"
             data-key="${key}" data-field="sa" data-value="${sc.sa !== undefined ? sc.sa : ''}"
             onclick="openScorePicker(this)">${sc.sa !== undefined ? sc.sa : '–'}</button>
-          <span class="dash">–</span>
-          <button type="button" class="score-btn score-inp${sc.sb !== undefined ? ' has-value' : ''}"
+        </div>
+        <div class="match-row">
+          <div class="team-name team-b">${esc(court.b[0])} &amp; ${esc(court.b[1])}</div>
+          <button type="button" class="score-btn score-inp score-b${sc.sb !== undefined ? ' has-value' : ''}"
             data-key="${key}" data-field="sb" data-value="${sc.sb !== undefined ? sc.sb : ''}"
             onclick="openScorePicker(this)">${sc.sb !== undefined ? sc.sb : '–'}</button>
         </div>
-        <div class="team-name team-b">${esc(court.b[0])} &amp; ${esc(court.b[1])}</div>
-        <button type="button" class="score-reset-btn" title="Nollaa tulos" onclick="resetScore('${key}')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6l-1 14H6L5 6"></path>
-            <path d="M10 11v6"></path>
-            <path d="M14 11v6"></path>
-            <path d="M9 6V4h6v2"></path>
-          </svg>
-        </button>
+        <div class="match-foot">
+          <div class="court-label">Kenttä ${courtNum}</div>
+          <button type="button" class="score-reset-btn" title="Nollaa tulos" onclick="resetScore('${key}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6l-1 14H6L5 6"></path>
+              <path d="M10 11v6"></path>
+              <path d="M14 11v6"></path>
+              <path d="M9 6V4h6v2"></path>
+            </svg>
+          </button>
+        </div>
       </div>`;
     }).join('');
 
